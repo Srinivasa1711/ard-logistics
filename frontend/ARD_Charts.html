@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Charts</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.1.0"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<style>
+    /* General styling for the page body */
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f0f2f5;
+        padding: 20px;
+        font-weight: normal;
+        color: #333;
+    }
+    /* Styles for the top header section */
+    .header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        background-color: #ffffff;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    }
+    .header .logo {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .header .logo img {
+        max-height: 80px;
+        margin-bottom: 10px;
+        border-radius: 10%;
+        padding: 4px;
+        background-color: #bcc5d4;
+    }
+
+    /* .banner{
+        width: 100%;
+        background-color: #269a3d;
+        text-align: center;
+        padding: 25px 0;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
+        filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
+        margin-bottom: 25px;
+        height: 150px;
+    } */
+
+    /* .banner img {
+        width: 230px;
+        height: 160px;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        transition: transform 0.3s ease-in-out; */
+    /* } */
+    .banner{
+        width: 100%;
+        background-color: #269a3d;
+        text-align: center;
+        padding: 25px 0;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
+        filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
+       
+         } 
+
+    .banner img {
+        width: 200px;
+        height: 160px;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        transition: transform 0.3s ease-in-out;
+    }
+    .banner img:hover {
+        transform: scale(1.03);
+    }
+    nav {
+        margin-bottom: 20px;
+        text-align: center;
+        background-color: #ffffff;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 25px;
+    }
+    nav .btn {
+        margin: 0;
+        text-decoration: none;
+        color: white;
+        background-color: #28a745;
+        border-color: #28a745;
+        border-radius: 25px;
+        padding: 14px 30px;
+        font-size: 1.15em;
+        font-weight: bold;
+        transition: all 0.3s ease-in-out;
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+        cursor: pointer;
+        min-width: 160px;
+    }
+    nav .btn:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+    }
+    .hidden-buttons-container {
+        display: none;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .hidden-buttons-container.active {
+        display: flex;
+    }
+
+    .hidden-buttons-container .btn {
+        background-color: #007bff;
+        border-color: #007bff;
+        padding: 6px 12px;
+        font-size: 0.8em;
+        min-width: 80px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .hidden-buttons-container.active .btn:hover {
+        background-color: #0056b3;
+        border-color: #004085;
+    }
+
+    .filter-container {
+        margin-bottom: 20px;
+        background-color: #ffffff;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        align-items:flex-end;
+    }
+     .filter-group {
+        flex: 1;
+        min-width: 280px;
+        position: relative; 
+    }
+    .filter-group label {
+        font-weight: bold;
+        color: #555;
+        display: block;
+        margin-bottom: 5px;
+        font-size: 1.2em;
+    }
+    .input-dropdown-wrapper {
+        position: relative; 
+    }
+    .search-input {
+        width: 75%;
+        padding: 10px 15px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 1em;
+        box-sizing: border-box;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+    .search-input:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    .selected-tags-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        padding-bottom: 5px;
+        max-width: 100%;
+        white-space: nowrap;
+        scrollbar-width: thin;
+        align-items: center;
+        height: 38px;
+        overflow-x: auto;
+    }
+    .selected-tag {
+        background-color: #e0f7fa;
+        color: #0056b3;
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.9em;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        white-space: nowrap;
+    }
+    .remove-tag {
+        cursor: pointer;
+        font-weight: bold;
+        color: #007bff;
+        font-size: 1.1em;
+    }
+    .remove-tag:hover {
+        color: #dc3545;
+    }
+
+    .checkbox-dropdown {
+        position: absolute;
+        top: 100%; 
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background-color: #fff;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        max-height: 250px;
+        overflow-y: auto;
+        padding: 10px;
+        display: none;
+    }
+    .checkbox-dropdown.show {
+        display: block;
+    }
+    .checkbox-dropdown div {
+        margin-bottom: 8px;
+        padding: 4px 0;
+    }
+    .checkbox-dropdown div:last-child {
+        margin-bottom: 0;
+    }
+    .checkbox-dropdown input[type="checkbox"] {
+        margin-right: 8px;
+        transform: scale(1.1);
+        cursor: pointer;
+    }
+    .checkbox-dropdown label {
+        font-weight: normal;
+        color: #333;
+        display: inline-block;
+        cursor: pointer;
+    }
+    .no-results {
+        padding: 10px;
+        color: #6c757d;
+        text-align: center;
+    }
+    .chart-container {
+        width: 100%;
+        height: 500px;
+    }
+    .chart-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+        grid-gap: 20px;
+    }
+    .chart-wrapper {
+        border: 1px solid #ddd;
+        padding: 20px;
+        background-color: #fff;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+    }
+
+
+    .chart-wrapper.selected-chart {
+        border: 2px solid #007bff;
+        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+    }
+
+
+    #combinedChartSection {
+        display: none;
+        margin-top: 30px;
+        padding: 40px;
+        margin-left: 40px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+         /* display: none;
+    justify-content: center;
+    align-items: center; */
+        /* top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 999;
+    background-color: white;
+
+    display: none;
+    justify-content: center;
+    align-items: center; */
+
+
+    }
+
+    #combinedChartSection.active {
+        display: block;
+    }
+    #combinedChartSection h2 {
+        text-align: center;
+        color: #2a5639;
+        margin-bottom: 20px;
+    }
+    #combinedChartContainer {
+        width: 100%;
+        height: 500px;
+
+
+    }
+    
+    .action-buttons {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center; 
+        margin-top: 20px;
+        margin-bottom: 30px;
+        gap: 10px; 
+    }
+    .action-buttons .btn {
+        margin: 0; 
+    }
+
+    #clearCenterIdBtn{
+        background-color: #218838;
+        border-radius: 20px;
+        color: white;
+    }
+    /* selected-chart-names styles as this element will be hidden */
+    /* .selected-chart-names {
+        margin-left: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        align-items: center;
+        font-size: 0.9em;
+        color: #555;
+        max-width: 400px; 
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+    .chart-selection-label {
+        font-weight: bold;
+        margin-right: 5px;
+    }
+    .selected-chart-item {
+        background-color: #e9ecef;
+        padding: 3px 8px;
+        border-radius: 10px;
+        white-space: nowrap;
+    } */
+    /* END REMOVED */
+
+    /*For adapting various screen sizes*/
+    @media (max-width: 1200px) {
+        .chart-container {
+            height: 450px;
+        }
+        .chart-grid {
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+        }
+        #combinedChartContainer {
+            /* height: 450px; */
+            height: 450px;
+            width: 450px;
+        }
+    }
+    @media (max-width: 992px) {
+        nav .btn {
+            padding: 12px 25px;
+            font-size: 1em;
+        }
+        .chart-container {
+            height: 400px;
+        }
+        #combinedChartContainer {
+            height: 400px;
+        }
+    }
+    @media (max-width: 768px) {
+        .header .logo img {
+            max-height: 60px;
+        }
+        .banner img {
+            max-width: 200px;
+        }
+        nav .btn {
+            width: calc(50% - 10px);
+            margin-bottom: 10px;
+        }
+        h1 {
+            font-size: 2em;
+        }
+        .filter-container {
+            flex-direction: column;
+            gap: 15px;
+        }
+        .filter-group {
+            width: 100%;
+        }
+        .chart-container {
+            height: 350px;
+        }
+        .chart-grid {
+            grid-template-columns: 1fr;
+        }
+        #combinedChartContainer {
+            height: 350px;
+            width: 300px;
+        }
+        
+        .action-buttons {
+            flex-direction: column; 
+            align-items: stretch; 
+            gap: 10px;
+        }
+        .action-buttons .btn {
+            width: 100%; 
+        }
+        
+    }
+
+    @media (max-width: 576px) {
+        .header .logo img {
+            max-height: 50px;
+        }
+        .banner img {
+            max-width: 150px;
+        }
+        nav .btn {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .chart-container {
+            height: 300px;
+        }
+        #combinedChartContainer {
+            height: 300px;
+            width: 300px;
+        }
+    }
+
+    .gaa-flip-container {
+        perspective: 1000px;
+        width: 270px;
+        height: 100px;
+        margin: auto;
+        position: relative;
+    }
+
+    .gaa-flipper {
+        width: 100%;
+        height: 100%;
+        transition: transform 0.8s ease-in-out;
+        transform-style: preserve-3d;
+        position: relative;
+    }
+
+    .gaa-flipper.flip {
+        transform: rotateY(180deg);
+    }
+
+    .gaa-front,
+    .gaa-back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10%;
+        box-sizing: border-box;
+    }
+
+    .gaa-front {
+        background-color: transparent;
+        z-index: 2;
+    }
+
+    .gaa-front img {
+        max-height: 180px;
+        border-radius: 10%;
+        background-color: #bcc5d4;
+    }
+
+    .gaa-back {
+        transform: rotateY(180deg);
+        /*background-color: #a8abb1;
+        display: flex;
+        align-items: center;
+        justify-content: center;  */
+        z-index: 1;
+        /* flex-direction: column;
+        margin-bottom: 20px;
+        padding: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); */
+    }
+
+    .gaa-back img {
+        max-width: 300%;
+
+        object-fit: contain;
+        padding: 4px;
+
+    }
+
+     #showIndividualChartsBtn{
+      display: none;
+      background-color: green;
+      padding: 15px;
+      border-radius: 20px;
+      color: white;
+      font-weight: bold;
+      font-size: 15px;
+       transition: all 0.3s ease-in-out;
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+     }
+     #clearSelectionBtn{
+      display: flex;
+      background-color:#6c757d;
+      color: white;
+      border-radius: 20px;
+      padding: 15px;
+      font-weight: bold;
+      font-size: 15px;
+      justify-content: flex-end;
+       transition: all 0.3s ease-in-out;
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+     }
+     #combineChartsBtn{
+      display: flex;
+      background-color: green;
+      color: white;
+      border-radius: 20px;
+      padding: 15px;
+      font-weight: bold;
+      font-size: 15px;
+       transition: all 0.3s ease-in-out;
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+     }
+      #combineChartsBtn:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+      }
+       #showIndividualChartsBtn:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+      }
+      #clearSelectionBtn:hover {
+        background-color:#434649;
+        border-color: #1e7e34;
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+      }
+     
+      #selectAllChartsBtn {
+        display: flex;
+        background-color: #063948; 
+        color: white;
+        border-radius: 20px;
+        padding: 15px;
+        font-weight: bold;
+        font-size: 15px;
+        transition: all 0.3s ease-in-out;
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+        display: none; /* Hide by default */
+      }
+      #selectAllChartsBtn:hover {
+        background-color: #589989;
+        border-color: #004085;
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+      }
+</style>
+
+
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <div class="gaa-flip-container">
+                <div class="gaa-flipper" id="gaaFlipper">
+                    <div class="gaa-front">
+                        <img src="{{ url_for('static', filename='GAA.jpg') }}" alt="GAA Logo">
+                    </div>
+                    <div class="gaa-back">
+                        <img src="{{ url_for('static', filename='Safety.jpg') }}" alt="Safety Message">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="banner">
+        <img src="{{ url_for('static', filename='ARD_Logo.jpg') }}" alt="ARD Logo">
+    </div>
+
+    <nav class="button-nav">
+        <button class="btn btn-success" id="pendingLabelsBtn">Pending Labels</button>
+
+        <div id="additionalButtons" class="hidden-buttons-container">
+            <button class="btn btn-success" onclick="window.location.href='/'">Filter View</button>
+            <button class="btn btn-success" onclick="window.location.href='/zone'">Zone View</button>
+        </div>
+
+        <button class="btn btn-success" onclick="window.location.href='/charts'">Charts</button>
+        <button class="btn btn-success" onclick="window.location.href='/ckd'">CKD Charts</button>
+        <button class="btn btn-success" onclick="window.location.href='/efficiency_report'">Efficiency Report</button>
+        <button class="btn btn-success" onclick="window.location.href='/racks_pending'">Racks Pending</button>
+    </nav>
+
+    <div class="filter-container">
+        <div class="filter-group">
+            <!-- <label for="ownerSearch">Owner:</label> -->
+            <div id="ownerSelectedTags" class="selected-tags-container"></div>
+            <div class="input-dropdown-wrapper" style="position: relative;"> <input type="text" id="ownerSearch" class="search-input" placeholder="Search Owners...">
+                <div id="ownerCheckboxesDropdown" class="checkbox-dropdown">
+                </div>
+            </div>
+        </div>
+        <div class="filter-group">
+            <!-- <label for="centerIdSearch">Center Id:</label> -->
+            <div id="centerIdSelectedTags" class="selected-tags-container"></div>
+            <div class="input-dropdown-wrapper" style="position: relative;"> <div style="display: flex; align-items: center; gap: 5px;"> 
+                    <input type="text" id="centerIdSearch" class="search-input" placeholder="Search Center IDs...">
+                    <button type="button" id="clearCenterIdBtn" class="btn btn-secondary btn-sm" style="padding: 10px 12px; font-size: 0.8em; white-space: nowrap;">Clear</button>
+                </div>
+                <div id="centerIdCheckboxesDropdown" class="checkbox-dropdown">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="action-buttons">
+        <button class="btn btn-success" id="selectAllChartsBtn">Select All Charts</button> <button class="btn btn-success" id="combineChartsBtn">Combine Charts</button>
+        <button class="btn btn-primary" id="clearSelectionBtn">Clear Selection</button>
+        <button class="btn btn-info" id="showIndividualChartsBtn">Individual Charts</button>
+        </div>
+
+    <div id="combinedChartSection">
+        <h2>Combined Chart View</h2>
+        <div id="combinedChartContainer">
+            <canvas id="combinedChartCanvas"></canvas>
+        </div>
+    </div>
+
+    <div id="charts" class="chart-grid"></div>
+
+
+
+
+<script>
+    // Run code when the entire HTML document is loaded
+    document.addEventListener("DOMContentLoaded", function () {
+        // Get chart data from the server (Flask backend) and parse it from JSON
+        let data = JSON.parse('{{ data | tojson | safe }}');
+        console.log("Loaded chart data:", data);
+
+        // Define all owners, sorted alphabetically
+        const allOwners = ["AGC","AUTONEUM","Autoliv","BOS","DRX","ELANDERS","FISCHER","FUJIKURA","IFA","MAGNA","VALEO","GRM","MAHLE","KASAI","POAI"].sort();
+        // Define all center IDs, sorted alphabetically
+        const allCenters = ["AGC Backlight", "AGC Backlight - P1", "AGC Quarter Glass LH", "AGC Quarter Glass LH - P1", "AGC Quarter Glass RH", "AGC Quarter Glass RH - P1",
+        "AGC Windshield", "AGC Windshield - P1", "AUTONEUM Front Carpet LH", "AUTONEUM Front Carpet LH - P1", "AUTONEUM Front Carpet RH", "AUTONEUM Rear Carpet",
+        "AUTONEUM Rear Carpet - P1", "AUTONEUM Front Carpet RH - P1", "BOS Cargo Net", "BOS Cargo Net - P1", "BOS Rollo Blind LH", "BOS Rollo Blind RH", "DRX Glove Box",
+        "DRX Glove Box - P1", "DRX IP Lowers", "DRX IP Upper", "DRX IP Upper - P1", "DRX IP Lowers - P1", "Elanders Plant 1", "Elanders Plant 2", "FISCHER Door",
+        "FISCHER Door - P1", "Fujikura Cockpit", "Fujikura Engine", "GRM Center Console - 167", "GRM Center Console - P1", "GRM Center Console EVA", "GRM EVA Dock Socket",
+        "GRM Grab Handle - 167", "GRM Grab Handle - P1", "GRM Grab Handle EVA", "IFA Front Prop Shaft", "IFA Front Shaft - P1", "IFA Rear prop Shaft", "IFA Rear Shaft - P1",
+        "KASAI Liftgate", "KASAI Windshield", "MAGNA Mirrors LH - 167", "MAGNA Mirrors LH - EVA", "MAGNA Mirrors RH - 167", "MAGNA Mirrors RH - EVA", "MAHLE HVAC - P1",
+        "POAI Fuel Tanks", "POAI Fuel Tanks - P1", "Steering Wheel - 167", "Steering Wheel - EVA", "VALEO DBE", "VALEO DBE - P1"].sort();
+
+        // Get jQuery references to filter elements
+        const ownerSearchInput = $('#ownerSearch');
+        const centerIdSearchInput = $('#centerIdSearch');
+        const ownerCheckboxesDropdown = $('#ownerCheckboxesDropdown');
+        const centerIdCheckboxesDropdown = $('#centerIdCheckboxesDropdown');
+        const ownerSelectedTagsContainer = $('#ownerSelectedTags');
+        const centerIdSelectedTagsContainer = $('#centerIdSelectedTags');
+        // Get reference to the clear Center ID button
+        const clearCenterIdBtn = $('#clearCenterIdBtn');
+
+        // Get references to the new buttons and display area
+        const selectAllChartsBtn = $('#selectAllChartsBtn');
+        // Reference to selectedChartNamesDisplay as it's no longer needed
+        // const selectedChartNamesDisplay = $('#selectedChartNamesDisplay');
+
+
+        // Arrays to store currently selected owners and centers
+        let selectedOwners = [], selectedCenters = [];
+
+        // Get URL parameters to remember selections if page is reloaded
+        const urlParams = new URLSearchParams(window.location.search);
+        // Initialize selectedOwners from URL, or empty array if not present
+        selectedOwners = urlParams.get('owner') ? urlParams.get('owner').split(',') : [];
+        // Initialize selectedCenters from URL, or empty array if not present
+        selectedCenters = urlParams.get('centers') ? urlParams.get('centers').split(',') : [];
+
+        // NEW GLOBAL VARIABLES FOR CHART COMBINATION
+        let selectedChartNames = new Set();  // Stores the names (cellNames) of charts currently selected by the user to combine
+        let preprocessedChartData = {}; // Stores pre-calculated data (picks, pending) for each chart, keyed by cellName
+        let combinedChartInstance = null;  // Stores the Chart.js instance of the combined chart so it can be updated or destroyed
+        let isCombinedViewActive = false; // Flag to track if combined view is active
+        let individualChartInstances = {}; // Object to store individual Chart.js instances by cellName
+        let currentFilteredChartNames = []; // Keep track of charts currently displayed based on filters
+
+        // --- Local Storage Functions ---
+        // If you close and re-open the browser, our chart selections and view preference will be remembered.
+        // Saves the current chart selection and view state to browser's local storage
+        function saveChartState() {
+            localStorage.setItem('selectedChartNames', JSON.stringify(Array.from(selectedChartNames)));
+            localStorage.setItem('isCombinedViewActive', JSON.stringify(isCombinedViewActive));
+        }
+
+        // If you close and re-open the browser, our chart selections and view preference will be remembered.
+        // Loads the chart selection and view state from browser's local storage
+        function loadChartState() {
+            const storedSelectedChartNames = localStorage.getItem('selectedChartNames');
+            if (storedSelectedChartNames) {
+                selectedChartNames = new Set(JSON.parse(storedSelectedChartNames));
+            }
+            const storedIsCombinedViewActive = localStorage.getItem('isCombinedViewActive');
+            if (storedIsCombinedViewActive) {
+                isCombinedViewActive = JSON.parse(storedIsCombinedViewActive);
+            }
+        }
+
+        /**
+         * Gets a list of center IDs that belong to the selected owners.
+         * If no owners are selected, it returns all center IDs.
+         */
+        function getCentersForSelectedOwners(allCenters, owners) {
+            return owners.length === 0
+                ? allCenters // If no owners, return all centers
+                : allCenters.filter(center =>
+                    owners.some(owner => center.startsWith(owner + ' '))
+                );
+        }
+
+        // --- Re-usable Filter UI Functions (renderCheckboxes, renderSelectedTags, setupFilter, filterAndRenderCheckboxes, UpdateURL)---
+        // These functions manage the interactive filter dropdowns. 
+
+        // Renders checkboxes into a dropdown container based on provided values and current selections.
+        function renderCheckboxes(container, name, values, currentSelected) {
+            container.empty(); // Clear any existing checkboxes
+            if (!values.length) return container.append('<div class="no-results">No matching results.</div>'); // Show no results message if no values
+            values.forEach(value => {
+                const id = `${name}-${value.replace(/\s/g, '-')}`; // Create unique ID for each checkbox
+                const checkbox = $(`<input type="checkbox" id="${id}" name="${name}" value="${value}">`)
+                                        .prop('checked', currentSelected.includes(value)) // Set checked if already selected
+                                        .on('change', function () { // Add event listener for checkbox state changes
+                    if (this.checked) {
+                        name === 'owner' ? selectedOwners.push(value) : selectedCenters.push(value); // Add value to selected array
+                    } else {
+                        name === 'owner'
+                            ? selectedOwners = selectedOwners.filter(v => v !== value) // Remove value from selected array
+                            : selectedCenters = selectedCenters.filter(v => v !== value);
+                    }
+                    // Special handling if an owner is selected/deselected
+                    if (name === 'owner') {
+                        if (!selectedOwners.length) {
+                            selectedCenters = []; // Clear centers if no owners selected
+                            centerIdCheckboxesDropdown.empty(); // Clear center dropdown
+                            centerIdSelectedTagsContainer.empty(); // Clear center tags
+                            updateURL(); // Update URL parameters
+                            renderSelectedTags('owner'); // Re-render owner tags
+                            fetchUpdatedData(); // Trigger update for charts
+                            return;
+                        }
+                        centerIdSearchInput.val(''); // Clear center search input
+                        const valid = getCentersForSelectedOwners(allCenters, selectedOwners); // Re-calculate valid centers
+                        selectedCenters = [...valid]; // Automatically select valid centers
+                        filterAndRenderCheckboxes('', centerIdCheckboxesDropdown, allCenters, 'center'); // Re-render center dropdown
+                        renderSelectedTags('center', true); // Force render of center tags to show new selections
+                    } else {
+                        renderSelectedTags('center'); // Re-render center tags
+                    }
+                    renderSelectedTags(name); // Re-render tags for the current filter type
+                    updateURL(); // Update URL parameters
+                    fetchUpdatedData(); // Trigger chart update after any filter change
+                });
+                const label = $(`<label for="${id}">`).text(value); // Create label for the checkbox
+                container.append($('<div>').append(checkbox).append(label)); // Append checkbox and label to container
+            });
+        }
+
+        // Renders (draws) the selected filter items as removable tags.
+        function renderSelectedTags(type, force = false) {
+            const isOwner = type === 'owner';
+            const container = isOwner ? ownerSelectedTagsContainer : centerIdSelectedTagsContainer;
+            const current = isOwner ? selectedOwners : selectedCenters;
+            // Logic to handle whether to show all centers as selected or only those from URL
+            if (!isOwner && !force) {
+                const fromURL = urlParams.get('centers') ? urlParams.get('centers').split(',') : [];
+                const valid = getCentersForSelectedOwners(allCenters, selectedOwners);
+                const fullDefault = current.length === valid.length && valid.every(c => current.includes(c));
+                if (!fromURL.length && fullDefault) {
+                    return container.empty(); // If all valid centers are auto-selected and not from URL, don't show tags
+                }
+            }
+            container.empty(); // Clear existing tags
+            current.forEach(val => {
+                const tag = $(`<span class="selected-tag">${val}<span class="remove-tag">&times;</span></span>`); // Create tag with remove button
+                tag.find('.remove-tag').on('click', () => { // Add click listener to the remove button
+                    if (isOwner) {
+                        selectedOwners = selectedOwners.filter(v => v !== val); // Remove owner from list
+                        if (!selectedOwners.length) {
+                            selectedCenters = []; // Clear centers if no owners selected
+                            centerIdCheckboxesDropdown.empty();
+                            centerIdSelectedTagsContainer.empty();
+                            updateURL();
+                            renderSelectedTags('owner');
+                            fetchUpdatedData();
+                            return;
+                        }
+                        const valid = getCentersForSelectedOwners(allCenters, selectedOwners); // Re-calculate valid centers
+                        selectedCenters = [...valid]; // Re-automatically select valid centers
+                        filterAndRenderCheckboxes('', centerIdCheckboxesDropdown, allCenters, 'center');
+                        renderSelectedTags('center', true); // Force render center tags
+                    } else {
+                        selectedCenters = selectedCenters.filter(v => v !== val); // Remove center from list
+                    }
+                    renderSelectedTags(type); // Re-render tags
+                    $(`#${type}-${val.replace(/\s/g,'-')}`).prop('checked', false); // Uncheck the checkbox in the dropdown
+                    updateURL();
+                    fetchUpdatedData(); // Trigger chart update after tag removal
+                });
+                container.append(tag); // Append tag to container
+            });
+        }
+
+        // Sets up event listeners for filter input fields and their dropdowns.
+        function setupFilter(input, dropdown, allVals, type) {
+            input.on('focus click', () => { // On focus or click, show dropdown
+                dropdown.addClass('show');
+                filterAndRenderCheckboxes(input.val(), dropdown, allVals, type); // Filter and render checkboxes
+            }).on('keyup', () => { // On keyup, re-filter and render checkboxes
+                filterAndRenderCheckboxes(input.val() || '', dropdown, allVals, type);
+            });
+            // When clicking anywhere else on the document, hide the dropdown
+             $(document).on('click', e => {
+                if (!$(e.target).closest(input).length && !$(e.target).closest(dropdown).length) {
+                    dropdown.removeClass('show');
+                }
+            });
+            dropdown.on('click', e => e.stopPropagation()); // Prevent clicks inside the dropdown from closing it immediately
+        }
+
+        // Filters the list of values based on search text and renders checkboxes.
+        function filterAndRenderCheckboxes(searchText, container, allVals, type) {
+            let values = allVals;
+            if (type === 'center') {
+                values = getCentersForSelectedOwners(allVals, selectedOwners); // If filtering centers, only show centers valid for selected owners
+            }
+            const filtered = values.filter(v => v.toLowerCase().includes(searchText.toLowerCase())); // Filter values that include the search text (case-insensitive)
+            const current = type === 'owner' ? selectedOwners : selectedCenters; // Determine which array is currently selected
+            renderCheckboxes(container, type, filtered, current); // Render the checkboxes
+        }
+
+        /**
+         * Updates the browser's URL with the current filter selections.
+         * This makes filter selections persistent across page reloads.
+         */
+        function updateURL() {
+            const params = new URLSearchParams(window.location.search); // Get current URL parameters
+            selectedOwners.length ? params.set('owner', selectedOwners.join(',')) : params.delete('owner'); // Set or delete 'owner' parameter
+            selectedCenters.length ? params.set('centers', selectedCenters.join(',')) : params.delete('centers'); // Set or delete 'centers' parameter
+            history.replaceState({}, '', `${window.location.pathname}?${params}`); // Update the browser's URL without reloading
+        }
+
+        //  ---TIME-RELATED FUNCTIONS (generateLast12Hours, formatHour) ---
+        // These functions help prepare the time labels for the charts, ensuring they show data for the last 12 hours in a readable format.
+        // Generates an array of Date objects for the last 12 hours
+        function generateLast12Hours() {
+            const now = new Date();
+            now.setMinutes(0,0,0); // Set to the current hour's start
+            return Array.from({ length: 12 }, (_, i) =>
+                new Date(now.getTime() - (11 - i) * 3600000) // Calculate each hour back
+            );
+        }
+
+        // Formats a Date object to a 2-digit hour and minute string (e.g., "10:00 PM")
+        function formatHour(date) {
+            return date.toLocaleTimeString("en-US",{ hour:"2-digit",minute:"2-digit",hour12:true });
+        }
+
+        // Function to update the display of selected chart names as it's no longer needed
+        // function updateSelectedChartNamesDisplay() {
+        //     selectedChartNamesDisplay.empty();
+        //     selectedChartNamesDisplay.append('<span class="chart-selection-label">Selected:</span>');
+        //     if (selectedChartNames.size > 0) {
+        //         Array.from(selectedChartNames).forEach(name => {
+        //             const item = $(`<span class="selected-chart-item">${name}</span>`);
+        //             selectedChartNamesDisplay.append(item);
+        //         });
+        //     } else {
+        //         selectedChartNamesDisplay.append('None');
+        //     }
+        // }
+ 
+        // This function creates or updates the individual bar charts.
+        // MODIFIED: renderCharts function to handle chart creation/update and visibility
+        function renderCharts(filterVals = []) {
+            currentFilteredChartNames = filterVals.sort((a, b) => a.localeCompare(b)); // Update global list of currently filtered charts
+            const chartContainer = document.getElementById("charts");
+            
+            // Manage visibility based on combined view status
+            if (!isCombinedViewActive) {
+                chartContainer.style.display = 'grid'; // Show individual charts
+                document.getElementById('combinedChartSection').classList.remove('active'); // Hide combined section
+                document.getElementById('showIndividualChartsBtn').style.display = 'none'; // Hide "Show Individual Charts" button
+                document.getElementById('combineChartsBtn').style.display = 'inline-block'; // Show "Combine" button
+                document.getElementById('clearSelectionBtn').style.display = 'inline-block'; // Show "Clear Selection" button
+                
+                // Control "Select All Charts" button visibility based on selection
+                if (selectedChartNames.size > 0) {
+                    selectAllChartsBtn.show(); // Show if charts are already selected
+                } else {
+                    selectAllChartsBtn.hide(); // Hide if no charts are selected initially
+                }
+                // selectedChartNamesDisplay visibility toggle
+                // selectedChartNamesDisplay.show(); 
+            } else {
+                chartContainer.style.display = 'none'; // Hide individual charts
+                document.getElementById('combinedChartSection').classList.add('active'); // Show combined section
+                document.getElementById('showIndividualChartsBtn').style.display = 'inline-block'; // Show "Show Individual Charts" button
+                document.getElementById('combineChartsBtn').style.display = 'none'; // Hide "Combine" button
+                document.getElementById('clearSelectionBtn').style.display = 'none'; // Hide "Clear Selection" button
+                selectAllChartsBtn.hide(); // Hide "Select All Charts" button in combined view
+                // selectedChartNamesDisplay visibility toggle
+                // selectedChartNamesDisplay.hide(); 
+                if (selectedChartNames.size > 0) {
+                    combineAndRenderSelectedCharts(false); // Re-render combined chart, don't save state again
+                } else {
+                    // If combined view was active but no charts selected, revert to individual view
+                    isCombinedViewActive = false;
+                    saveChartState();
+                    // Use setTimeout to ensure the display state updates before re-rendering individual charts
+                    setTimeout(() => renderCharts(filterVals), 0); 
+                    return;
+                }
+            }
+
+            const last12 = generateLast12Hours();
+            const labels = last12.map(formatHour);
+
+            if (currentFilteredChartNames.length === 0) {
+                chartContainer.innerHTML = "<p style='text-align: center; color: #666; font-size: 1.2em;'>No charts to display for the current selection.</p>";
+                // Destroy any existing chart instances if no filtered data
+                Object.keys(individualChartInstances).forEach(cellName => {
+                    const chart = individualChartInstances[cellName];
+                    if (chart) {
+                        chart.destroy(); // Destroy Chart.js instance
+                        const wrapperToRemove = document.querySelector(`.chart-wrapper[data-cell-name="${cellName}"]`);
+                        if (wrapperToRemove) {
+                            wrapperToRemove.remove(); // Remove chart's DOM element
+                        }
+                    }
+                    delete individualChartInstances[cellName]; // Remove from our tracking object
+                });
+                // updateSelectedChartNamesDisplay(); // Update display after charts are removed
+                return;
+            }
+
+            // Identify charts that should be present and charts that should be removed
+            const chartsCurrentlyFiltered = new Set(currentFilteredChartNames);
+            const chartsToRemove = new Set(Object.keys(individualChartInstances));
+
+            chartsCurrentlyFiltered.forEach(cellName => {
+                chartsToRemove.delete(cellName); // Don't remove charts that are in the current filter
+            });
+
+            // Remove charts that are no longer in the filtered set
+            chartsToRemove.forEach(cellName => {
+                const chart = individualChartInstances[cellName];
+                if (chart) {
+                    chart.destroy(); // Destroy Chart.js instance
+                    const wrapperToRemove = document.querySelector(`.chart-wrapper[data-cell-name="${cellName}"]`);
+                    if (wrapperToRemove) {
+                        wrapperToRemove.remove(); // Remove chart's DOM element
+                    }
+                }
+                delete individualChartInstances[cellName]; // Remove from our tracking object
+                selectedChartNames.delete(cellName); // Also remove from selectedChartNames if it's no longer displayed
+            });
+
+            // Create/update charts that should be visible
+            currentFilteredChartNames.forEach(cellName => {
+                if (!data[cellName]) {
+                    console.warn(`Data for cellName "${cellName}" not found. Skipping chart.`);
+                    return;
+                }
+
+                let wrapper = document.querySelector(`.chart-wrapper[data-cell-name="${cellName}"]`);
+                let canvas;
+                let chartInstance = individualChartInstances[cellName];
+
+                if (!wrapper) {
+                    // Create new chart elements if they don't exist in the DOM
+                    wrapper = document.createElement("div");
+                    wrapper.classList.add("chart-wrapper");
+                    wrapper.dataset.cellName = cellName; // Store cellName for identification
+
+                    // Add click listener for selecting/deselecting charts for combination
+                    wrapper.addEventListener('click', function() {
+                        if (selectedChartNames.has(cellName)) {
+                            selectedChartNames.delete(cellName);
+                            wrapper.classList.remove('selected-chart');
+                        } else {
+                            selectedChartNames.add(cellName);
+                            wrapper.classList.add('selected-chart');
+                        }
+                        saveChartState(); // Save updated selection state to local storage
+                        // Show "Select All Charts" button when any chart is clicked
+                        if (selectedChartNames.size > 0) {
+                            selectAllChartsBtn.show();
+                        } else {
+                            selectAllChartsBtn.hide(); // Hide if no charts are selected
+                        }
+                    });
+
+                    const title = document.createElement("h3");
+                    title.textContent = cellName;
+                    title.style.textAlign = "center";
+                    wrapper.appendChild(title);
+
+                    canvas = document.createElement("canvas");
+                    canvas.classList.add("chart-container");
+                    wrapper.appendChild(canvas);
+                    chartContainer.appendChild(wrapper); // Add new chart wrapper to the DOM grid
+                } else {
+                    // If wrapper already exists, find its canvas and ensure it's visible
+                    canvas = wrapper.querySelector('canvas');
+                    wrapper.style.display = ''; // Ensure wrapper is visible (if previously hidden by filter/search)
+                }
+
+                // Apply 'selected-chart' class based on current selection state
+                if (selectedChartNames.has(cellName)) {
+                    wrapper.classList.add('selected-chart');
+                } else {
+                    wrapper.classList.remove('selected-chart');
+                }
+
+                // Prepare chart data (picks, labels, pending) for the current cell
+                const picksArr = Array(12).fill(0);
+                const labelsArr = Array(12).fill(0);
+                const pendingArr = Array(12).fill(0);
+
+                data[cellName].picks.forEach(p => {
+                    const ph = formatHour(new Date(`${p.day} ${p.hour}`));
+                    const idx = labels.indexOf(ph);
+                    if (idx !== -1) picksArr[idx] = p.parts_sequenced;
+                });
+
+                if (data[cellName].labels && data[cellName].labels.length === 12) {
+                    data[cellName].labels.forEach((lab,i) => {
+                        labelsArr[i] = lab;
+                        pendingArr[i] = Math.max(0, lab - picksArr[i]);
+                    });
+                } else {
+                    console.warn(`Labels data for ${cellName} is not an array of 12 or is missing. Assuming 0 pending.`);
+                    pendingArr.fill(0);
+                }
+
+                // Store preprocessed data for potential chart combination
+                preprocessedChartData[cellName] = {
+                    picksArr: picksArr,
+                    labelsArr: labelsArr,
+                    pendingArr: pendingArr
+                };
+
+                if (chartInstance) {
+                    // If chart instance already exists, update its data and refresh
+                    chartInstance.data.labels = labels;
+                    chartInstance.data.datasets[0].data = picksArr;
+                    chartInstance.data.datasets[1].data = pendingArr;
+                    // Temporarily disable animation for smoother updates/resizes
+                    chartInstance.options.animation.duration = 0; 
+                    chartInstance.update(); // Update the chart with new data
+                    chartInstance.resize(); // Force re-measurement of canvas size
+                    // Optionally reset animation duration for future updates
+                    // chartInstance.options.animation.duration = 1000; 
+                } else {
+                    // If chart instance does not exist, create a new Chart.js instance
+                    const newChartInstance = new Chart(canvas, {
+                        type: 'bar',
+                        data: { labels, datasets: [
+                            { label: "Picks", backgroundColor: 'rgba(46,184,46,0.7)', data: picksArr },
+                            { label: "Pending Labels", backgroundColor: 'rgba(255,225,28,0.85)', data: pendingArr }
+                        ]},
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: { position: 'top' },
+                                datalabels: {
+                                    color: 'white',
+                                    font: { weight: 'bold', size: 12 },
+                                    anchor: 'center',
+                                    align: 'center',
+                                    formatter: v => v === 0 ? null : v
+                                }
+                            },
+                            scales: {
+                                x: { stacked: true },
+                                y: { stacked: true, beginAtZero: true }
+                            },
+                            // Disable initial animations to prevent "growing" effect on creation
+                            animation: {
+                                duration: 0 
+                            }
+                        },
+                        plugins: [ChartDataLabels]
+                    });
+                    individualChartInstances[cellName] = newChartInstance; // Store the new instance
+                }
+            });
+            //  updateSelectedChartNamesDisplay(); // Update the display of selected chart names after rendering charts
+        }
+
+        // This function is triggered when the "combined charts" button is clicked.
+        // Combines selected individual charts into a single combined chart view.
+        function combineAndRenderSelectedCharts(saveState = true) {
+            if (selectedChartNames.size === 0) {
+                alert("Please select at least one chart to combine.");
+                return;
+            }
+
+            const last12 = generateLast12Hours();
+            const labels = last12.map(formatHour);
+
+            const combinedPicks = Array(12).fill(0);
+            const combinedLabelsTotal = Array(12).fill(0);
+            const combinedPending = Array(12).fill(0);
+
+            selectedChartNames.forEach(cellName => {
+                const chartData = preprocessedChartData[cellName];
+                if (chartData) {
+                    chartData.picksArr.forEach((val, i) => {
+                        combinedPicks[i] += val;
+                    });
+                    chartData.labelsArr.forEach((val, i) => {
+                        combinedLabelsTotal[i] += val;
+                    });
+                }
+            });
+
+            combinedLabelsTotal.forEach((val, i) => {
+                combinedPending[i] = Math.max(0, val - combinedPicks[i]);
+            });
+
+            const combinedChartCanvas = document.getElementById("combinedChartCanvas");
+            // Destroy existing combined chart instance before creating a new one
+            if (combinedChartInstance) {
+                combinedChartInstance.destroy();
+            }
+
+            // Create the new combined chart instance
+            combinedChartInstance = new Chart(combinedChartCanvas, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: "Combined Picks", backgroundColor: 'rgba(46,184,46,0.7)', data: combinedPicks },
+                        { label: "Combined Pending Labels", backgroundColor: 'rgba(255,225,28,0.85)', data: combinedPending }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top' },
+                        datalabels: {
+                            color: 'white',
+                            font: { weight: 'bold', size: 15 },
+                            anchor: 'center',
+                            align: 'center',
+                            formatter: v => v === 0 ? null : v
+                        }
+                    },
+                    scales: {
+                        x: { stacked: true },
+                        y: { stacked: true, beginAtZero: true }
+                    }
+                },
+                plugins: [ChartDataLabels]
+            });
+
+            isCombinedViewActive = true; // Set flag for combined view
+            if (saveState) saveChartState(); // Save state to local storage
+
+            // Hide individual charts and show combined chart section
+            document.getElementById('charts').style.display = 'none';
+            document.getElementById('combinedChartSection').classList.add('active');
+            document.getElementById('showIndividualChartsBtn').style.display = 'inline-block';
+            document.getElementById('combineChartsBtn').style.display = 'none';
+            document.getElementById('clearSelectionBtn').style.display = 'none';
+            selectAllChartsBtn.hide(); // Hide "Select All Charts" button in combined view
+            // REMOVED: selectedChartNamesDisplay visibility toggle
+            // selectedChartNamesDisplay.hide(); 
+        }
+
+        // Clears the current selection of charts.
+        function clearChartSelection() {
+            selectedChartNames.clear(); // Clear the set of selected chart names
+            document.querySelectorAll('.chart-wrapper').forEach(wrapper => {
+                wrapper.classList.remove('selected-chart'); // Remove highlight from chart wrappers
+            });
+            saveChartState(); // Save the cleared selection state
+            // REMOVED: updateSelectedChartNamesDisplay(); // Update the display of selected chart names
+            selectAllChartsBtn.hide(); // Hide select all button when selection is cleared
+            console.log("Chart selection cleared.");
+        }
+
+        // Function to select all currently displayed charts
+        function selectAllCharts() {
+            currentFilteredChartNames.forEach(cellName => {
+                selectedChartNames.add(cellName);
+                const wrapper = document.querySelector(`.chart-wrapper[data-cell-name="${cellName}"]`);
+                if (wrapper) {
+                    wrapper.classList.add('selected-chart');
+                }
+            });
+            saveChartState();
+            // updateSelectedChartNamesDisplay();
+            console.log("All displayed charts selected.");
+        }
+
+
+        // Switches back to showing individual charts from the combined view.
+        function showIndividualCharts() {
+            isCombinedViewActive = false; // Set flag to individual view
+            saveChartState(); // Save state
+
+            document.getElementById('charts').style.display = 'grid'; // Show individual charts container
+            document.getElementById('combinedChartSection').classList.remove('active'); // Hide combined chart section
+            document.getElementById('showIndividualChartsBtn').style.display = 'none'; // Hide this button
+            document.getElementById('combineChartsBtn').style.display = 'inline-block'; // Show "Combine" button
+            document.getElementById('clearSelectionBtn').style.display = 'inline-block'; // Show "Clear Selection" button
+            
+            // Show "Select All Charts" button if there are any selected charts upon returning
+            if (selectedChartNames.size > 0) {
+                selectAllChartsBtn.show(); 
+            } else {
+                selectAllChartsBtn.hide(); // Otherwise, keep it hidden
+            }
+            // selectedChartNamesDisplay visibility toggle
+            // selectedChartNamesDisplay.show(); 
+
+            // If combined chart instance exists, destroy it
+            if (combinedChartInstance) {
+                combinedChartInstance.destroy();
+                combinedChartInstance = null;
+            }
+
+            // Re-fetch data and re-render charts to ensure they are up-to-date and visible.
+            // This call will trigger the renderCharts function, which manages chart creation/updates.
+            fetchUpdatedData(); 
+
+            // A short delay to ensure the DOM layout has updated after changing display properties,
+            // then explicitly resize/update each individual chart.
+            setTimeout(() => {
+                Object.values(individualChartInstances).forEach(chart => {
+                    if (chart) {
+                        // Temporarily set animation duration to 0 for this resize
+                        chart.options.animation.duration = 0; 
+                        chart.resize(); // Force Chart.js to re-measure and redraw
+                        // Optionally reset animation duration for future updates
+                        // chart.options.animation.duration = 1000;
+                    }
+                });
+                console.log("Individual charts resized after returning from combined view.");
+            }, 200); // Increased delay for better layout stability
+        }
+
+        // Fetches updated chart data from the server and triggers chart rendering.
+        function fetchUpdatedData() {
+            fetch('/api/charts_data')
+                .then(res => res.json())
+                .then(updated => {
+                    data = updated; // Update global data object
+                    const last12 = generateLast12Hours();
+                    const labels = last12.map(formatHour);
+
+                    // Preprocess data for each cellName (picks, labels)
+                    Object.keys(data).forEach(cellName => {
+                        const picksArr = Array(12).fill(0);
+                        const labelsArr = Array(12).fill(0);
+
+                        data[cellName].picks.forEach(p => {
+                            const ph = formatHour(new Date(`${p.day} ${p.hour}`));
+                            const idx = labels.indexOf(ph);
+                            if (idx !== -1) picksArr[idx] = p.parts_sequenced;
+                        });
+
+                        if (data[cellName].labels && data[cellName].labels.length === 12) {
+                            data[cellName].labels.forEach((lab,i) => {
+                                labelsArr[i] = lab;
+                            });
+                        } else {
+                            console.warn(`Labels data for ${cellName} is not an array of 12 or is missing. Assuming 0 labels.`);
+                            labelsArr.fill(0);
+                        }
+
+                        preprocessedChartData[cellName] = {
+                            picksArr: picksArr,
+                            labelsArr: labelsArr
+                        };
+                    });
+
+                    // Determine which charts to display based on current filter selections
+                    const filtered = selectedCenters.length
+                        ? selectedCenters
+                        : selectedOwners.length
+                            ? Object.keys(data).filter(c => selectedOwners.some(o => c.startsWith(o)))
+                            : Object.keys(data);
+                    
+                    renderCharts(filtered); // Render/update charts based on filtered data
+                })
+                .catch(e => console.error('Error fetching data for charts:', e)); // Log any fetch errors
+        }
+
+        //  Clears all selected Center IDs
+        function clearCenterIds() {
+            selectedCenters = []; // Clear the selectedCenters array
+            centerIdSearchInput.val(''); // Clear the search input box
+            
+            // Re-render the checkboxes in the dropdown to reflect no selection
+            // We need to re-evaluate based on currently selected owners
+            const availableCenters = getCentersForSelectedOwners(allCenters, selectedOwners);
+            renderCheckboxes(centerIdCheckboxesDropdown, 'center', availableCenters, selectedCenters);
+
+            renderSelectedTags('center'); // Clear the displayed tags
+            updateURL(); // Update the URL
+            fetchUpdatedData(); // Refresh charts
+        }
+
+
+        // --- Initial Setup on DOMContentLoaded ---
+        loadChartState(); // Load chart state (selections, combined view active) from local storage
+
+        // Initial hide for selectAllChartsBtn on page load
+        selectAllChartsBtn.hide(); 
+        // Initial hide for selectedChartNamesDisplay
+        // selectedChartNamesDisplay.hide();
+
+        // Initialize filter dropdowns and search functionality
+        setupFilter(ownerSearchInput, ownerCheckboxesDropdown, allOwners, 'owner');
+        setupFilter(centerIdSearchInput, centerIdCheckboxesDropdown, allCenters, 'center');
+
+        // Handle initial URL parameters to apply filters on page load
+        if (selectedOwners.length) {
+            selectedCenters = getCentersForSelectedOwners(allCenters, selectedOwners);
+            filterAndRenderCheckboxes('', centerIdCheckboxesDropdown, allCenters, 'center');
+            renderSelectedTags('owner');
+            renderSelectedTags('center', true);
+        } else if (selectedCenters.length) {
+            filterAndRenderCheckboxes('', centerIdCheckboxesDropdown, allCenters, 'center');
+            renderSelectedTags('owner');
+            renderSelectedTags('center');
+        } else {
+            // If no filters in URL, apply default rendering
+            filterAndRenderCheckboxes('', centerIdCheckboxesDropdown, allCenters, 'center');
+            renderSelectedTags('owner');
+            renderSelectedTags('center');
+        }
+
+        // Add event listeners for the action buttons
+        document.getElementById('combineChartsBtn').addEventListener('click', combineAndRenderSelectedCharts);
+        document.getElementById('clearSelectionBtn').addEventListener('click', clearChartSelection);
+        document.getElementById('showIndividualChartsBtn').addEventListener('click', showIndividualCharts);
+        
+        // Event listener for the clear Center ID button
+        clearCenterIdBtn.on('click', clearCenterIds);
+
+        // Event listener for the "Select All Charts" button
+        selectAllChartsBtn.on('click', selectAllCharts);
+
+
+        // Initial data fetch and chart rendering when the page loads
+        fetchUpdatedData();
+
+        // Set up interval for refreshing data every 60 seconds (60000 milliseconds)
+        setInterval(fetchUpdatedData, 60000);
+    });
+     const pendingLabelsBtn = document.getElementById('pendingLabelsBtn');
+            const additionalButtons = document.getElementById('additionalButtons');
+            pendingLabelsBtn.addEventListener('click', function() {
+                additionalButtons.classList.toggle('active');
+            });
+
+    // GAA Flipper animation: Toggles the "flip" class every 5 seconds for a visual effect
+    setInterval(() => {
+        const flipper = document.getElementById("gaaFlipper");
+        flipper.classList.toggle("flip");
+    }, 5000);
+</script>
+</body>
+</html>
