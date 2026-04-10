@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Training Log Form</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* Set basic font and background for the whole page */
+   body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0f963e;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    /* Styles for the logo container */
+    .logo-container {
+        width: 100%;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    /* Styles for the logo image */
+    .logo-container img {
+        max-width: 120px;
+        max-height: 80px;
+        height: auto;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        border-radius: 15px;
+        filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
+    }
+    .logo-container img:hover {
+        transform: scale(1.03);
+    }
+
+    /* Styles for the message box (for success/error messages) */
+    #message-box {
+      display: none;
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #4CAF50;
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      text-align: center;
+      font-weight: 500;
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+      max-width: 90%;
+    }
+    #message-box.show {
+      opacity: 1;
+      display: block;
+    }
+
+    /* Styles for the main form container */
+    .form-container {
+      background-color: white;
+      padding: 32px;
+      border-radius: 16px;
+      box-shadow: 0 30px 50px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 700px;
+      border: 1px solid #e5e7eb;
+    }
+
+    /* Styles for the form title */
+    .form-title {
+      background-image: linear-gradient(to right, #0f963e, #1aab50);
+      color: white;
+      padding: 10px 20px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      font-size: 1.575rem;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      z-index: 15;
+      margin-bottom: 1.5rem;
+      border-radius: 15px;
+      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
+    }
+    .form-title:hover {
+      transform: scale(1.03);
+    }
+
+    /* Styles for section titles within the form */
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #1f2937;
+      margin-top: 1.25rem;
+    }
+
+    /* Styles for form sections */
+    .form-section {
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    /* Hide the specific questions initially */
+    #lowSkillQuestions {
+        display: none;
+    }
+
+    /* Styles for form labels */
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #374151;
+      margin-bottom: 0.25rem;
+      margin-top: 1.25rem;
+    }
+
+    /* Styles for form input fields */
+    .form-input {
+      display: block;
+      width: 100%;
+      padding: 0.5rem 1rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      transition: border 0.2s, box-shadow 0.2s;
+    }
+    .form-input:focus {
+      border-color: #6366f1;
+      outline: none;
+    }
+    textarea.form-input {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    /* Styles for grid layout */
+    .form-grid {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    /* Responsive grid for larger screens */
+    @media (min-width: 768px) {
+      .form-grid-2 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    /* Styles for the submit/next button */
+    .submit-btn {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: white;
+      background-color: #4f46e5;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.2s;
+      margin-top: 1.5rem;
+      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
+    }
+
+    .submit-btn:hover {
+      background-color: #4338ca;
+      transform: scale(1.05);
+    }
+
+    /* Styles for placeholder text in select */
+    .select {
+        color: gray;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="message-box"></div>
+
+  <div class="form-container">
+    <div class="logo-container">
+        <img src="{{ url_for('static', filename='ARD_Logo.jpg') }}" alt="ARD Logo">
+    </div>
+    <h1 class="form-title">Feedback Form</h1>
+
+    <form id="feedbackForm">
+
+      <div class="form-section">
+        <h2 class="section-title">Feedback about trianers</h2>
+        <div class="form-grid">
+          <div class="form-grid">
+            <div>
+            <label class="form-label">1.Did the trainer demonstrate a thorough understanding of the subject matter?</label>
+            <div class="mt-2 space-y-2">
+                <div class="flex items-center">
+                    <input id="area-inventory" name="struggleAreas" type="radio" value="inventory management" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="area-inventory" class="ml-2 text-sm text-gray-700">Strongly Agree</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="area-shipping" name="struggleAreas" type="radio" value="shipping procedures" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="area-shipping" class="ml-2 text-sm text-gray-700">Agree</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="area-software" name="struggleAreas" type="radio" value="using the software" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="area-software" class="ml-2 text-sm text-gray-700">Neutral</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="area-software" name="struggleAreas" type="radio" value="using the software" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="area-software" class="ml-2 text-sm text-gray-700">Disagree</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="area-software" name="struggleAreas" type="radio" value="using the software" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="area-software" class="ml-2 text-sm text-gray-700">Strongly Disagree</label>
+                </div>
+            </div>
+          <div>
+            <label class="form-label">2. Were they able to answer your questions accurately and clearly?</label>
+            <div class="mt-2 space-y-2">
+                <div class="flex items-center">
+                    <input id="area-inventory" name="struggleAreas" type="radio" value="inventory management" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="area-inventory" class="ml-2 text-sm text-gray-700">Strongly Agree</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="area-shipping" name="struggleAreas" type="radio" value="shipping procedures" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="area-shipping" class="ml-2 text-sm text-gray-700">Agree</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="area-software" name="struggleAreas" type="radio" value="using the software" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="area-software" class="ml-2 text-sm text-gray-700">Neutral</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="area-software" name="struggleAreas" type="radio" value="using the software" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="area-software" class="ml-2 text-sm text-gray-700">Disagree</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="area-software" name="struggleAreas" type="radio" value="using the software" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="area-software" class="ml-2 text-sm text-gray-700">Strongly Disagree</label>
+                </div>
+          </div>
+
+          <div>
+            <label class="form-label">3. Was the trainer's communication clear and easy to understand?</label>
+            <div class="mt-2 space-y-2">
+               <div class="flex items-center">
+                    <input id="area-inventory" name="struggleAreas" type="radio" value="inventory management" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="area-inventory" class="ml-2 text-sm text-gray-700">Excellent</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="area-shipping" name="struggleAreas" type="radio" value="shipping procedures" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="area-shipping" class="ml-2 text-sm text-gray-700">Good</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="area-software" name="struggleAreas" type="radio" value="using the software" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="area-software" class="ml-2 text-sm text-gray-700">Average</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="area-software" name="struggleAreas" type="radio" value="using the software" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="area-software" class="ml-2 text-sm text-gray-700">Fair</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="area-software" name="struggleAreas" type="radio" value="using the software" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="area-software" class="ml-2 text-sm text-gray-700">Poor</label>
+                </div>
+
+                 <div>
+            <label class="form-label">4. Did the trainer manage the training time effectively?</label>
+            <div class="mt-2 space-y-2">
+               <div class="flex items-center">
+                    <input id="area-inventory" name="struggleAreas" type="radio" value="inventory management" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="area-inventory" class="ml-2 text-sm text-gray-700">Always</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="area-shipping" name="struggleAreas" type="radio" value="shipping procedures" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="area-shipping" class="ml-2 text-sm text-gray-700">Often</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="area-software" name="struggleAreas" type="radio" value="using the software" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="area-software" class="ml-2 text-sm text-gray-700">Sometimes</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="area-software" name="struggleAreas" type="radio" value="using the software" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="area-software" class="ml-2 text-sm text-gray-700">Rarely</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="area-software" name="struggleAreas" type="radio" value="using the software" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="area-software" class="ml-2 text-sm text-gray-700">Never</label>
+                </div>
+
+                  <div>
+            <label class="form-label">5. Did the trainer give the right amount of information for the time you had? </label>
+            <div class="mt-2 space-y-2">
+               <div class="flex items-center">
+                    <input id="area-inventory" name="struggleAreas" type="radio" value="inventory management" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="area-inventory" class="ml-2 text-sm text-gray-700">Far too much information</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="area-shipping" name="struggleAreas" type="radio" value="shipping procedures" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="area-shipping" class="ml-2 text-sm text-gray-700">A bit too much information</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="area-software" name="struggleAreas" type="radio" value="using the software" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="area-software" class="ml-2 text-sm text-gray-700">Just right / Good Balance</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="area-software" name="struggleAreas" type="radio" value="using the software" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="area-software" class="ml-2 text-sm text-gray-700">A bit too little information</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="area-software" name="struggleAreas" type="radio" value="using the software" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="area-software" class="ml-2 text-sm text-gray-700"> Far too little information</label>
+                </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h2 class="section-title">Trainee Overall Feedback</h2>
+        <div class="form-grid">
+          <div>
+            <label for="feedbackText" class="form-label">Feedback</label>
+            <textarea id="feedbackText" name="feedbackText" class="form-input" placeholder="Provide detailed feedback What type of support or additional training do you think would be most beneficial for your training?" rows="5" required autocomplete="off"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn">Submit Feedback</button>
+    </form>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Clear username/password fields if they exist (good for login forms, less relevant here)
+        const usernameField = document.getElementById('username');
+        const passwordField = document.getElementById('password');
+        if (usernameField) { usernameField.value = ''; }
+        if (passwordField) { passwordField.value = ''; }
+
+        // Get references to the form and message box elements
+        const trainingForm = document.getElementById('trainingForm');
+        const messageBox = document.getElementById('message-box');
+
+        // Function to display a success or error message at the top of the page
+        function showMessage(message, type = 'success') {
+            messageBox.textContent = message; // Set the message text
+            messageBox.className = 'show'; // Add 'show' class to make it visible (fades in)
+            // Set background color: red for error, green for success
+            messageBox.style.backgroundColor = type === 'error' ? '#f44336' : '#4CAF50';
+
+            // Hide the message after 3 seconds
+            setTimeout(() => {
+                messageBox.classList.remove('show'); // Remove 'show' class to hide it (fades out)
+            }, 3000); // 3000 milliseconds = 3 seconds
+        }
+
+        // --- Event Listener for Form Submission ---
+        trainingForm.addEventListener('submit', function (event) {
+            event.preventDefault(); // STOP the browser from reloading the page!
+
+            // Get the values from all input fields, removing any extra spaces
+            const name = document.getElementById('name').value.trim();
+            const employeeId = document.getElementById('employeeId').value.trim();
+            const shift = document.getElementById('shift').value;
+            const process = document.getElementById('process').value.trim();
+            const ownerName = document.getElementById('ownerName').value.trim();
+            const trainerName = document.getElementById('trainerName').value.trim();
+            const startTime = document.getElementById('startTime').value;
+            const endTime = document.getElementById('endTime').value;
+
+            // --- Client-Side Validation ---
+            if (!name || !employeeId || !shift || !process || !ownerName || !trainerName || !startTime || !endTime) {
+                showMessage('Please fill in all required fields.', 'error'); // Show error message
+                return; // Stop the function here if fields are empty
+            }
+
+            const startDate = new Date(startTime);
+            const endDate = new Date(endTime);
+            if (endDate <= startDate) {
+                showMessage('End time must be after start time.', 'error'); // Show error
+                return; // Stop the function here
+            }
+
+            // --- Form Data Preparation ---
+            // Create a JavaScript object to hold all the form data
+            const formData = {
+                name: name,
+                employeeId: employeeId,
+                shift: shift,
+                process: process,
+                ownerName: ownerName,
+                trainerName: trainerName,
+                startTime: startTime,
+                endTime: endTime
+            };
+
+            // --- Send data to Flask backend using fetch API ---
+    //         fetch('/submit_trainee_form', {
+    //             method: 'POST', // Use POST method to send data
+    //             headers: {
+    //                 'Content-Type': 'application/json' // Tell the server we're sending JSON
+    //             },
+    //             body: JSON.stringify(formData) // Convert JavaScript object to JSON string
+    //         })
+    //         .then(response => response.json()) // Parse the JSON response from the server
+    //         .then(data => {
+    //             if (data.success) {
+    //                 showMessage(data.message, 'success'); // Show success message
+    //                 trainingForm.reset(); // Clear the form
+    //                 window.location.href = "{{ url_for('Training_Congrats') }}"; // Redirect to congrats page
+    //             } else {
+    //                 showMessage(data.message, 'error'); // Show error message
+    //             }
+    //         })
+    //         .catch(error => {
+    //             console.error('Error submitting trainee form:', error);
+    //             showMessage('An error occurred. Please try again later.', 'error');
+    //         });
+    //     });
+    // });
+
+    // Start sending data to the server!
+     fetch('/submit_trainee_form', {
+                method: 'POST',  // We're sending data, so we use the 'POST' method
+                headers: {
+                    'Content-Type': 'application/json' // Tell the server we're sending data in a specific format called JSON
+                },
+                body: JSON.stringify(formData) // Convert our 'formData' (which is a JavaScript object) into a JSON text string
+            })
+             // After sending, wait for the server's reply...
+            .then(response => response.json()) // ...and when it arrives, read it as JSON text 
+            .then(data => {    // Now that we have the server's data, let's check if everything went well
+                if (data.success) { // If the server says 'success' is true, show a good message
+                    showMessage(data.message, 'success'); // Show success message
+                    trainingForm.reset(); // Clear all the fields in our form
+                    window.location.href = "{{ url_for('Training_Congrats') }}"; // Redirect to congrats page
+                } else {
+                    showMessage(data.message, 'error'); // If the server says 'success' is false, show an error message
+                }
+            })
+            // If anything goes wrong during the sending process (like no internet or server is down)...
+            .catch(error => {
+                // Log the technical error in the browser's console so developers can see it
+                console.error('Error submitting trainee form:', error);
+                // Show a general error message to the user
+                showMessage('An error occurred. Please try again later.', 'error');
+            });
+        });
+    });
+  </script>
+</body>
+</html>
