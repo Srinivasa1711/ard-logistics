@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CKD Simplified View</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.1.0"></script>
+
+    <style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f0f2f5;
+        padding: 20px;
+        font-weight: normal;
+        color: #333;
+    }
+    .header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        background-color: #ffffff;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    }
+    .header .logo {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .header .logo img {
+        max-height: 80px;
+        margin-bottom: 10px;
+        border: 1px solid #e88f1a;
+        border-radius: 10%;
+        padding: 4px;
+        background-color: #bcc5d4;
+    }
+    .banner{
+        width: 100%;
+        background-color: #269a3d;
+        text-align: center;
+        padding: 25px 0;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
+        filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
+       
+         } 
+
+    .banner img {
+        width: 200px;
+        height: 160px;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        transition: transform 0.3s ease-in-out;
+    }
+    .banner img:hover {
+        transform: scale(1.03);
+    }
+      nav {
+        margin-bottom: 30px;
+        text-align: center;
+        background-color: #ffffff;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 25px; 
+     } 
+    nav .btn {
+        margin: 0;
+        text-decoration: none;
+        color: white;
+        background-color: #28a745;
+        border-color: #28a745;
+        border-radius: 25px;
+        padding: 14px 30px;
+        font-size: 1.15em;
+        font-weight: bold;
+        transition: all 0.3s ease-in-out;
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+        cursor: pointer;
+        min-width: 160px;
+    
+    }
+    nav .btn:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+    }
+    .hidden-buttons-container {
+    display: none;
+    justify-content: center; 
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.hidden-buttons-container.active {
+    display: flex; 
+}
+    
+    .hidden-buttons-container .btn {
+    background-color: #007bff;
+    border-color: #007bff;
+    padding: 6px 12px;
+    font-size: 0.8em;  
+    min-width: 80px;  
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+    .hidden-buttons-container.active .btn:hover {
+        background-color: #0056b3; 
+         border-color: #004085;
+}
+    
+    @media (max-width: 1200px) {
+        .chart-grid {
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+        }
+  
+    }
+    @media (max-width: 992px) {
+        nav .btn {
+            padding: 12px 25px;
+            font-size: 1em;
+        }
+    
+    }
+    @media (max-width: 768px) {
+        .header .logo img {
+            max-height: 60px;
+        }
+        .chart-grid {
+            grid-template-columns: 1fr; 
+        }
+        .banner img {
+            max-width: 200px;
+        }
+        nav .btn {
+            width: calc(50% - 10px);
+            margin-bottom: 10px;
+        }
+       
+    }
+    @media (max-width: 576px) {
+        .header .logo img {
+            max-height: 50px;
+        }
+        .banner img {
+            max-width: 150px;
+        }
+        
+    }
+
+    #charts {
+    border: 1px solid blue;
+    padding: 20px;
+    text-align: center;
+  }
+  .chart-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+        grid-gap: 20px;
+
+        nav .btn {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+      
+    }
+    .gaa-flip-container {
+        perspective: 1000px;
+        width: 270px; 
+        height: 100px; 
+        margin: auto;
+        position: relative;
+    }
+
+    .gaa-flipper {
+        width: 100%;
+        height: 100%;
+        transition: transform 0.8s ease-in-out;
+        transform-style: preserve-3d;
+        position: relative;
+    }
+
+    .gaa-flipper.flip {
+        transform: rotateY(180deg);
+    }
+
+    .gaa-front,
+    .gaa-back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10%;
+        box-sizing: border-box;
+    }
+
+    .gaa-front {
+        background-color: transparent;
+        z-index: 2;
+    }
+
+    .gaa-front img {
+        max-height: 180px; 
+        /* border: 1px solid #e88f1a; */
+        border-radius: 10%;
+        /* padding: 4px; */ 
+        background-color: #bcc5d4; 
+    }
+
+    .gaa-back {
+        transform: rotateY(180deg);
+        /*background-color: #a8abb1; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center;  */
+        z-index: 1;
+        /* flex-direction: column;
+        margin-bottom: 20px;
+        padding: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); */
+    }
+
+    .gaa-back img { 
+        max-width: 300%; 
+        
+        object-fit: contain; 
+        padding: 4px;
+        
+    }
+
+</style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <div class="gaa-flip-container">
+                <div class="gaa-flipper" id="gaaFlipper">
+                    <div class="gaa-front">
+                        <img src="{{ url_for('static', filename='GAA.jpg') }}" alt="GAA Logo">
+                    </div>
+                    <div class="gaa-back">
+                        <img src="{{ url_for('static', filename='Safety.jpg') }}" alt="Safety Message">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="banner">
+        <img src="{{ url_for('static', filename='ARD_Logo.jpg') }}" alt="ARD Logo">
+    </div>
+    <nav class="button-nav">
+        <button class="btn btn-success" id="pendingLabelsBtn">Pending Labels</button>
+
+        <div id="additionalButtons" class="hidden-buttons-container">
+            <button class="btn btn-success" onclick="window.location.href='/'">Filter View</button>
+            <button class="btn btn-success" onclick="window.location.href='/zone'">Zone View</button>
+        </div>
+
+        <button class="btn btn-success" onclick="window.location.href='/charts'">Charts</button>
+        <button class="btn btn-success" onclick="window.location.href='/ckd'">CKD Charts</button>
+        <button class="btn btn-success" onclick="window.location.href='/efficiency_report'">Efficiency Report</button>
+        <button class="btn btn-success" onclick="window.location.href='/racks_pending'">Racks Pending</button>
+    </nav>
+    <div id="charts" class="chart-grid"></div>
+    
+    <script>
+        // Run code when the entire HTML document is loaded
+   document.addEventListener("DOMContentLoaded", function () {
+        let data = JSON.parse('{{ data | tojson | safe }}'); // Load initial data from Flask
+        const chartContainer = document.getElementById('charts');
+
+        function formatHour(date) {
+            return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+        }
+
+        function renderCharts() {
+            chartContainer.innerHTML = ''; // Clear previous charts
+
+            Object.keys(data).forEach(centerId => {
+                if (data[centerId]) {
+                    const wrapper = document.createElement('div');
+                    wrapper.classList.add('chart-wrapper');
+
+                    const title = document.createElement('h3');
+                    title.textContent = centerId;
+                    title.style.textAlign = 'center';
+                    title.style.marginBottom = '10px';
+                    wrapper.appendChild(title);
+
+                    const canvas = document.createElement('canvas');
+                    canvas.classList.add('chart-container');
+                    wrapper.appendChild(canvas);
+                    chartContainer.appendChild(wrapper);
+
+                    // Extract unique time slots that have parts sequenced
+                    const labels = [];
+                    const partsSequenced = [];
+
+                    data[centerId].forEach(record => {
+                        const recordHour = formatHour(new Date(`${record.day} ${record.hour}`));
+                        labels.push(recordHour);
+                        partsSequenced.push(record.parts_sequenced);
+                    });
+
+                    new Chart(canvas, {
+                        type: 'bar',
+                        data: {
+                            labels: labels, // Only show time slots that have data
+                            datasets: [{
+                                label: "Parts Sequenced",
+                                backgroundColor: 'rgba(46, 184, 46, 0.7)',
+                                data: partsSequenced,
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: { position: 'top' },
+                                datalabels: {
+                                    color: 'white',
+                                    font: { weight: 'bold', size: 14 },
+                                    anchor: 'center',
+                                    align: 'center',
+                                    formatter: function (value) {
+                                        return value === 0 ? null : value;
+                                    }
+                                },
+                            },
+                            scales: {
+                                x: { stacked: true },
+                                y: { stacked: true, beginAtZero: true }
+                            }
+                        },
+                        plugins: [ChartDataLabels]
+                    });
+                }
+            });
+        }
+
+        function fetchUpdatedData() {
+            fetch('/api/ckd_data')
+                .then(response => response.json())
+                .then(updatedData => {
+                    data = updatedData;
+                    renderCharts();
+                })
+                .catch(error => console.error('Error fetching updated data:', error));
+        }
+
+        setInterval(fetchUpdatedData, 60000); // Refresh every 60 seconds
+
+        renderCharts(); // Render immediately on page load
+    });
+
+    const pendingLabelsBtn = document.getElementById('pendingLabelsBtn');
+    const additionalButtons = document.getElementById('additionalButtons');
+
+    pendingLabelsBtn.addEventListener('click', function() {
+        additionalButtons.classList.toggle('active');
+    });
+    setInterval(() => {
+            const flipper = document.getElementById("gaaFlipper");
+            flipper.classList.toggle("flip");
+        }, 5000);
+ 
+</script>
+</body>
+</html>
