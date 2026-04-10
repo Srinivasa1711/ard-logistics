@@ -55,6 +55,8 @@ I designed and implemented a digital training log system to replace manual track
 - Flask  
 - SQL  
 - HTML, CSS, JavaScript  
+- Json
+- API
 
 ---
 
