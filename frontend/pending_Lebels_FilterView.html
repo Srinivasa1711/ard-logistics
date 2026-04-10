@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pending Labels</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <meta http-equiv="refresh" content="300">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <style>
+     body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f0f2f5;
+        padding: 20px;
+        font-weight: normal;
+        color: #333;
+    }
+    .header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        background-color: #ffffff;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    }
+    .header .logo {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .header .logo img {
+        max-height: 80px;
+        margin-bottom: 10px;
+        border: 1px solid #e88f1a;
+        border-radius: 10%;
+        padding: 4px;
+        background-color: #bcc5d4;
+    }
+    .banner{
+        width: 100%;
+        background-color: #269a3d;
+        text-align: center;
+        padding: 25px 0;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
+        filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
+       
+         } 
+
+    .banner img {
+        width: 200px;
+        height: 160px;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        transition: transform 0.3s ease-in-out;
+    }
+    .banner img:hover {
+        transform: scale(1.03);
+    }
+    nav {
+        margin-bottom: 30px;
+        text-align: center;
+        background-color: #ffffff;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 25px;
+    }
+    nav .btn {
+        margin: 0;
+        text-decoration: none;
+        color: white;
+        background-color: #28a745;
+        border-color: #28a745;
+        border-radius: 25px;
+        padding: 14px 30px;
+        font-size: 1.15em;
+        font-weight: bold;
+        transition: all 0.3s ease-in-out;
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+        cursor: pointer;
+        min-width: 160px;
+    
+    }
+    nav .btn:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+    }
+    .hidden-buttons-container {
+        display: none;
+        justify-content: center; 
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .hidden-buttons-container.active {
+        display: flex; 
+    }
+    
+    .hidden-buttons-container .btn {
+        background-color: #007bff;
+        border-color: #007bff;
+        padding: 6px 12px;
+        font-size: 0.8em;  
+        min-width: 80px;  
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .hidden-buttons-container.active .btn:hover {
+        background-color: #0056b3; 
+        border-color: #004085;
+    }
+    h1 {
+        color: #01130b;
+        text-align: center;
+        margin-top: 30px; 
+        margin-bottom: 30px;
+        font-size: 1.7em;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    }
+    .tableContainer {
+        margin-bottom: 20px;
+    }
+    .table-header-green {
+        background-color: #808080; 
+        color: #ffffff;
+    }
+    .pre-trim-buffer-container {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+        
+    }
+    .pre-trim-buffer-container.active{
+        display: flex;
+    }
+    .pre-trim-buffer-box {
+        background-color: #2AA62A;
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        width: 48%;
+        text-align: center;
+        font-size: 1.2em;
+        border: 2px solid black;
+    }
+    .pre-trim-buffer-box .value {
+        font-size: 1.5em;
+        font-weight: bold;
+        color: black;
+    }
+    .high-pending {
+        background-color: #E20000;
+        color: #ffffff; 
+    }
+    .low-pending {
+        background-color: #0BD31E;
+        color: #000000;
+    }
+    .high-skips {
+        background-color: #E20000;
+        color: #ffffff; 
+    }
+    .low-skips {
+        background-color: #0BD31E;
+    }
+    .high-racks {
+        background-color: #FFE11C;
+    }
+    .low-racks {
+        background-color: #0BD31E;
+    }
+    
+    .filter-container {
+        margin-bottom: 20px;
+        background-color: #ffffff;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        align-items:flex-end;
+    }
+     .filter-group {
+        flex: 1;
+        min-width: 280px;
+        position: relative; 
+    }
+    .filter-group label {
+        font-weight: bold;
+        color: #555;
+        display: block;
+        margin-bottom: 5px;
+        font-size: 1.2em;
+    }
+    .search-input {
+        width: 100%; 
+        padding: 10px 15px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 1em;
+        box-sizing: border-box;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+   
+    .filter-group select { 
+        width: 100%; 
+        height: 44px; 
+        padding: 10px 15px; 
+        border: 1px solid #ced4da; 
+        border-radius: 4px; 
+        font-size: 1em; 
+        box-sizing: border-box; 
+    }
+    .search-input:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    .selected-tags-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        padding-bottom: 5px;
+        max-width: 100%;
+        white-space: nowrap;
+        scrollbar-width: thin;
+        align-items: center;
+        height: 38px; 
+        overflow-x: auto; 
+    }
+    .selected-tag {
+        background-color: #e0f7fa; 
+        color: #0056b3; 
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.9em;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        border: 1px solid #a7d9f7;
+        white-space: nowrap; 
+    }
+    .remove-tag {
+        cursor: pointer;
+        font-weight: bold;
+        color: #007bff;
+        font-size: 1.1em;
+    }
+    .remove-tag:hover {
+        color: #dc3545; 
+    }
+
+    .checkbox-dropdown {
+        position: absolute;
+        top: 100%; 
+        left: 0;
+        right: 0;
+        z-index: 1000; 
+        background-color: #fff;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        max-height: 250px; 
+        overflow-y: auto;
+        padding: 10px;
+        display: none; 
+    }
+    #filterZone{
+        margin-top: 40px;
+    }
+    .checkbox-dropdown.show {
+        display: block; 
+    }
+    .checkbox-dropdown div {
+        margin-bottom: 8px; 
+        padding: 4px 0;
+    }
+    .checkbox-dropdown div:last-child {
+        margin-bottom: 0;
+    }
+    .checkbox-dropdown input[type="checkbox"] {
+        margin-right: 8px;
+        transform: scale(1.1);
+        cursor: pointer;
+    }
+    .checkbox-dropdown label {
+        font-weight: normal;
+        color: #333;
+        display: inline-block;
+        cursor: pointer;
+    }
+    .no-results {
+        padding: 10px;
+        color: #6c757d;
+        text-align: center;
+    }
+
+    /* Media Queries for Responsive Design */
+    @media (max-width: 768px) {
+        .pre-trim-buffer-container {
+            flex-direction: column;
+            align-items: center;
+        }
+        .pre-trim-buffer-box {
+            width: 90%;
+            margin-bottom: 20px;
+        }
+        nav .btn {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        h1 {
+            font-size: 1.5em;
+        }
+        .banner img {
+            max-width: 150px;
+        }
+        
+        .filter-container {
+            flex-direction: column; 
+            gap: 15px; 
+        }
+        .filter-group {
+            width: 100%; 
+        }
+       
+        .filter-container select { 
+            margin-top: 10px; 
+        }
+    }
+
+    @media (max-width: 576px) {
+        .pre-trim-buffer-box .value {
+            font-size: 1.2em;
+        }
+        .header .logo img {
+            max-height: 40px;
+        }
+        .banner img {
+            max-width: 120px;
+        }
+    }
+    .gaa-flip-container {
+        perspective: 1000px;
+        width: 270px; 
+        height: 100px; 
+        margin: auto;
+        position: relative;
+    }
+
+    .gaa-flipper {
+        width: 100%;
+        height: 100%;
+        transition: transform 0.8s ease-in-out;
+        transform-style: preserve-3d;
+        position: relative;
+    }
+
+    .gaa-flipper.flip {
+        transform: rotateY(180deg);
+    }
+
+    .gaa-front,
+    .gaa-back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10%;
+        box-sizing: border-box;
+    }
+
+    .gaa-front {
+        background-color: transparent;
+        z-index: 2;
+    }
+
+    .gaa-front img {
+        max-height: 180px; 
+        /* border: 1px solid #e88f1a; */
+        border-radius: 10%;
+        /* padding: 4px; */ 
+        background-color: #bcc5d4; 
+    }
+
+    .gaa-back {
+        transform: rotateY(180deg);
+        /*background-color: #a8abb1; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center;  */
+        z-index: 1;
+        /* flex-direction: column;
+        margin-bottom: 20px;
+        padding: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); */
+    }
+
+    .gaa-back img { 
+        max-width: 300%; 
+        
+        object-fit: contain; 
+        padding: 4px;
+        
+    }
+
+</style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <div class="gaa-flip-container">
+                <div class="gaa-flipper" id="gaaFlipper">
+                    <div class="gaa-front">
+                        <img src="{{ url_for('static', filename='GAA.jpg') }}" alt="GAA Logo">
+                    </div>
+                    <div class="gaa-back">
+                        <img src="{{ url_for('static', filename='Safety.jpg') }}" alt="Safety Message">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="banner">
+         <img src="{{ url_for('static', filename='ARD_Logo.jpg') }}" alt="ARD Logo">
+
+    </div>
+
+   <nav class="button-nav">
+        <button class="btn btn-success" id="pendingLabelsBtn">Pending Labels</button>
+
+        <div id="additionalButtons" class="hidden-buttons-container">
+            <button class="btn btn-success" onclick="window.location.href='/'">Filter View</button>
+            <button class="btn btn-success" onclick="window.location.href='/zone'">Zone View</button>
+        </div>
+
+        <button class="btn btn-success" onclick="window.location.href='/charts'">Charts</button>
+        <button class="btn btn-success" onclick="window.location.href='/ckd'">CKD Charts</button>
+        <button class="btn btn-success" onclick="window.location.href='/efficiency_report'">Efficiency Report</button>
+        <button class="btn btn-success" onclick="window.location.href='/racks_pending'">Racks Pending</button>
+    </nav>
+    <div class="pre-trim-buffer-container">
+        <div class="pre-trim-buffer-box" style="background-color: #FFE11C;">
+            <strong style="color: black;">Plant 1 Pre-Trim Buffer</strong>
+            <div class="value">{{ plant_1_pre_trim }}</div>
+        </div>
+        <div class="pre-trim-buffer-box" style="background-color: #FFE11C;">
+            <strong style="color: black;">Plant 2 Pre-Trim Buffer</strong>
+            <div class="value">{{ plant_2_pre_trim }}</div>
+        </div>
+    </div>
+
+    <!-- <h1>Pending Labels</h1> -->
+    <div class="filter-container">
+        <div class="filter-group">
+            <!-- <label for="filterZone">Zone:</label> -->
+            <select id="filterZone">
+                <option value="">All Zones</option>
+                {% for zone in zones %}
+                    <option value="{{ zone }}">{{ zone }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <!-- <label for="centerIdSearch">Center ID:</label> -->
+            <div id="centerIdSelectedTags" class="selected-tags-container"></div>
+            <input type="text" id="centerIdSearch" class="search-input" placeholder="Search Center IDs...">
+            <div id="centerIdCheckboxesDropdown" class="checkbox-dropdown">
+                </div>
+        </div>
+
+        <div class="filter-group">
+            <!-- <label for="ownerSearch">Owner:</label>  -->
+            <div id="ownerSelectedTags" class="selected-tags-container"></div>
+            <input type="text" id="ownerSearch" class="search-input" placeholder="Search Owners...">
+            <div id="ownerCheckboxesDropdown" class="checkbox-dropdown">
+                </div>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th class="table-header-green" style="width: 30%;">Center ID</th>
+                    <th class="table-header-green" style="width: 10%;">Zone</th>
+                    <th class="table-header-green" style="width: 20%;">Pending Labels</th>
+                    <th class="table-header-green" style="width: 20%;">Skips(Prod#)</th>
+                    <th class="table-header-green" style="width: 20%;">Racks Not Shipped</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in data %}
+                <tr>
+                    <td>{{ row[0] }}</td>
+                    <td>{{ row[1] }}</td>
+                    <td class="{{ 'high-pending' if row[2] > 50 else 'low-pending' }}">{{ row[2] }}</td>
+                    <td class="{{ 'high-skips' if row[3] > 0 else 'low-skips' }}">{{ row[3] }}</td>
+                    <td class="{{ 'high-racks' if row[4] > 0 else 'low-racks' }}">{{ row[4] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+<script>
+    $(document).ready(function () {
+        const allOwners = ["AGC", "AUTONEUM", "Autoliv", "BOS", "DRX", "ELANDERS", "FISCHER", "FUJIKURA", "IFA", "MAGNA", "VALEO", "GRM", "MAHLE", "KASAI", "POAI"].sort();
+        const allCenters = ["AGC Backlight", "AGC Backlight - P1", "AGC Quarter Glass LH", "AGC Quarter Glass LH - P1", "AGC Quarter Glass RH", "AGC Quarter Glass RH - P1",
+            "AGC Windshield", "AGC Windshield - P1", "AUTONEUM Front Carpet LH", "AUTONEUM Front Carpet LH - P1", "AUTONEUM Front Carpet RH", "AUTONEUM Rear Carpet",
+            "AUTONEUM Rear Carpet - P1", "AUTONEUM Front Carpet RH - P1", "BOS Cargo Net", "BOS Cargo Net - P1", "BOS Rollo Blind LH", "BOS Rollo Blind RH", "DRX Glove Box",
+            "DRX Glove Box - P1", "DRX IP Lowers", "DRX IP Upper", "DRX IP Upper - P1", "DRX IP Lowers - P1", "Elanders Plant 1", "Elanders Plant 2", "FISCHER Door",
+            "FISCHER Door - P1", "Fujikura Cockpit", "Fujikura Engine", "GRM Center Console - 167", "GRM Center Console - P1", "GRM Center Console EVA", "GRM EVA Dock Socket",
+            "GRM Grab Handle - 167", "GRM Grab Handle - P1", "GRM Grab Handle EVA", "IFA Front Prop Shaft", "IFA Front Shaft - P1", "IFA Rear prop Shaft", "IFA Rear Shaft - P1",
+            "KASAI Liftgate", "KASAI Windshield", "MAGNA Mirrors LH - 167", "MAGNA Mirrors LH - EVA", "MAGNA Mirrors RH - 167", "MAGNA Mirrors RH - EVA", "MAHLE HVAC - P1",
+            "POAI Fuel Tanks", "POAI Fuel Tanks - P1", "Steering Wheel - 167", "Steering Wheel - EVA", "VALEO DBE", "VALEO DBE - P1"].sort();
+
+            // Get jQuery references to filter elements
+        const ownerSearchInput = $('#ownerSearch');
+        const centerIdSearchInput = $('#centerIdSearch');
+        const ownerCheckboxesDropdown = $('#ownerCheckboxesDropdown');
+        const centerIdCheckboxesDropdown = $('#centerIdCheckboxesDropdown');
+        const ownerSelectedTagsContainer = $('#ownerSelectedTags');
+        const centerIdSelectedTagsContainer = $('#centerIdSelectedTags');
+
+        // Arrays to store currently selected owners and centers
+        let selectedOwners = [];
+        let selectedCenters = [];
+
+        // Get URL parameters to remember selections if page is reloaded
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        /**
+             * Gets a list of center IDs that belong to the selected owners.
+             * If no owners are selected, it returns all center IDs.**/
+        
+        function getCentersForSelectedOwners(allCenters, currentSelectedOwners) {
+            if (currentSelectedOwners.length === 0) return allCenters;
+            return allCenters.filter(center =>
+                currentSelectedOwners.some(owner => center.startsWith(owner + ' '))
+            );
+        }
+
+        function renderCheckboxes(container, name, values, currentSelected) {
+            container.empty(); // Clear any existing checkboxes
+            if (values.length === 0) {
+                container.append('<div class="no-results">No matching results.</div>');
+                return;
+            }
+            values.forEach(value => {
+                const div = $('<div>');
+                const checkbox = $('<input type="checkbox">')
+                // Create a unique ID for each checkbox
+                    .attr('id', `${name}-${value.replace(/\s/g, '-')}`)
+                    .attr('name', name)
+                    .val(value);
+
+                if (currentSelected.includes(value)) {
+                    checkbox.prop('checked', true);
+                }
+
+                const label = $('<label>').attr('for', checkbox.attr('id')).text(value);
+                div.append(checkbox).append(label);
+                container.append(div);
+
+                checkbox.on('change', function () {
+                    if (this.checked) {
+                        if (name === 'owner') selectedOwners.push(value);
+                        else selectedCenters.push(value);
+                    } else {
+                        if (name === 'owner') selectedOwners = selectedOwners.filter(item => item !== value);
+                        else selectedCenters = selectedCenters.filter(item => item !== value);
+                    }
+
+                    if (name === 'owner') {
+                        if (selectedOwners.length === 0) {
+                            selectedCenters = [];
+                            centerIdCheckboxesDropdown.empty();
+                            centerIdSelectedTagsContainer.empty();
+                            updateURL();
+                            renderSelectedTags('owner');
+                            filterTable(); 
+                            return;
+                        }
+
+                        centerIdSearchInput.val('');
+                        const validCenters = getCentersForSelectedOwners(allCenters, selectedOwners);
+                        selectedCenters = [...validCenters];
+                        filterAndRenderCheckboxes('', centerIdCheckboxesDropdown, allCenters, 'center');
+                        renderSelectedTags('center', true);
+                    
+                    } else {
+                        renderSelectedTags('center');
+                    }
+
+                    renderSelectedTags(name);
+                    updateURL();
+                    filterTable(); 
+                });
+            });
+        }
+
+        // Renders (draws) the selected filter items as tags.
+        function renderSelectedTags(type, forceRender = false) {
+            let container, currentSelected;
+            if (type === 'owner') {
+                container = ownerSelectedTagsContainer;
+                currentSelected = selectedOwners;
+            } else {
+                container = centerIdSelectedTagsContainer;
+                currentSelected = selectedCenters;
+
+                // THIS LOGIC HANDLES WHETHER TO SHOW ALL CENTERS AS SELECTED OR ONLY THOSE FROM URL
+                if (!forceRender) {
+                     // Check if current selected centers are ALL the valid centers for the selected owners
+                    // AND if there were no explicit centers in the URL initially.
+                    const centersFromURL = urlParams.get('centers') ? urlParams.get('centers').split(',') : [];
+                    const validCenters = getCentersForSelectedOwners(allCenters, selectedOwners);
+                    const isDefault = selectedCenters.length === validCenters.length &&
+                                      selectedCenters.every(c => validCenters.includes(c));
+                    if (centersFromURL.length === 0 && isDefault) {
+                        container.empty(); // If all valid centers are auto-selected and not from URL, don't show tags
+                        return;
+                    }
+                }
+            }
+
+            container.empty(); // Clear existing tags
+            currentSelected.forEach(value => {
+                // Create a tag element with a remove button
+                const tag = $('<span class="selected-tag"></span>').text(value);
+                const removeBtn = $('<span class="remove-tag">&times;</span>');
+                tag.append(removeBtn);
+                container.append(tag);
+
+                // Add click listener to the remove button
+                removeBtn.on('click', function () {
+                    if (type === 'owner') {
+                        // Remove owner from list
+                        selectedOwners = selectedOwners.filter(item => item !== value);
+
+                        if (selectedOwners.length === 0) {
+                            selectedCenters = []; // Clear centers if no owners selected
+                            centerIdCheckboxesDropdown.empty();
+                            centerIdSelectedTagsContainer.empty();
+                            updateURL();
+                            renderSelectedTags('owner');
+                            filterTable(); // Trigger update for charts
+                            return;
+                        }
+
+                        const newValidCenters = getCentersForSelectedOwners(allCenters, selectedOwners);
+                        selectedCenters = [...newValidCenters];
+                        filterAndRenderCheckboxes('', centerIdCheckboxesDropdown, allCenters, 'center');
+                        renderSelectedTags('center', true);
+                    } else {
+                        selectedCenters = selectedCenters.filter(item => item !== value);
+                        renderSelectedTags('center');
+                    }
+
+                    renderSelectedTags(type);
+                    $(`#${type}-${value.replace(/\s/g, '-')}`).prop('checked', false);
+                    updateURL();
+                    filterTable(); 
+                });
+            });
+        }
+
+         // Sets up event listeners for filter input fields and their dropdowns.
+        function setupFilter(searchInput, dropdownContainer, allValues, type) {
+            function handleFilter() {
+                dropdownContainer.addClass('show');
+                filterAndRenderCheckboxes(searchInput.val(), dropdownContainer, allValues, type);
+            }
+
+            searchInput.on('focus click', handleFilter); // When input is clicked or focused
+
+            searchInput.on('keyup', function () {
+                filterAndRenderCheckboxes(this.value, dropdownContainer, allValues, type);
+                if (this.value.trim() === "") {
+                    filterAndRenderCheckboxes('', dropdownContainer, allValues, type); // Filter and render checkboxes based on new text
+                }
+            });
+
+            // When clicking anywhere else on the document
+            $(document).on('click', function (event) {
+                // If the click was not inside the input or the dropdown
+                if (!$(event.target).closest(searchInput).length && !$(event.target).closest(dropdownContainer).length) {
+                    dropdownContainer.removeClass('show');
+                }
+            });
+
+            // Prevent clicks inside the dropdown from closing it immediately
+            dropdownContainer.on('click', function (event) {
+                event.stopPropagation();
+            });
+        }
+
+        // Filters the list of values based on search text and renders checkboxes.
+        function filterAndRenderCheckboxes(searchText, container, allValues, type) {
+            let valuesToFilter = allValues;
+            if (type === 'center') {
+                // If filtering centers, only show centers valid for selected owners
+                valuesToFilter = getCentersForSelectedOwners(allValues, selectedOwners);
+            }
+            // Filter values that include the search text (case-insensitive)
+            const filtered = valuesToFilter.filter(v => v.toLowerCase().includes(searchText.toLowerCase()));
+            // Determine which array (owners or centers) is currently selected
+            const currentSelected = (type === 'owner') ? selectedOwners : selectedCenters;
+            renderCheckboxes(container, type, filtered, currentSelected);
+        }
+
+         /**
+             * Updates the browser's URL with the current filter selections.
+             * This makes filter selections persistent across page reloads.
+             */
+        function updateURL() {
+            const params = new URLSearchParams(window.location.search);  // Get current URL parameters
+            if (selectedOwners.length > 0) { // Set or delete 'owner' parameter based on selectedOwners
+                params.set('owner', selectedOwners.join(','));
+            } else {
+                params.delete('owner');
+            }
+
+            if (selectedCenters.length > 0) { // Set or delete 'centers' parameter based on selectedCenters
+                params.set('centers', selectedCenters.join(','));
+            } else {
+                params.delete('centers');
+            }
+
+            // Update the browser's URL without reloading the page
+            history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
+        }
+
+        if (localStorage.getItem('filterZone')) {
+            $('#filterZone').val(localStorage.getItem('filterZone'));
+        }
+
+        const ownersFromURL = urlParams.get('owner') ? urlParams.get('owner').split(',') : [];
+        const centersFromURL = urlParams.get('centers') ? urlParams.get('centers').split(',') : [];
+
+       if (ownersFromURL.length > 0) {
+            selectedOwners = ownersFromURL;
+        } else if (localStorage.getItem('selectedOwners')) {
+            selectedOwners = localStorage.getItem('selectedOwners').split(',').filter(Boolean);
+        } else {
+            selectedOwners = []; 
+        }
+
+        let initialCentersToLoad = [];
+        if (centersFromURL.length > 0 && ownersFromURL.length > 0) {
+            const validCenters = getCentersForSelectedOwners(allCenters, ownersFromURL);
+            initialCentersToLoad = centersFromURL.filter(c => validCenters.includes(c));
+        } else if (localStorage.getItem('selectedCenters')) {
+             initialCentersToLoad = localStorage.getItem('selectedCenters').split(',').filter(Boolean);
+             const validCentersForCurrentOwners = getCentersForSelectedOwners(allCenters, selectedOwners);
+             initialCentersToLoad = initialCentersToLoad.filter(c => validCentersForCurrentOwners.includes(c));
+        } else {
+            initialCentersToLoad = getCentersForSelectedOwners(allCenters, selectedOwners); 
+        }
+        selectedCenters = initialCentersToLoad;
+        function saveFilterValuesToLocalStorage() {
+            localStorage.setItem('filterZone', $('#filterZone').val());
+            localStorage.setItem('selectedOwners', selectedOwners.join(','));
+            localStorage.setItem('selectedCenters', selectedCenters.join(','));
+        }
+
+        
+        $('#filterZone').on('change', function() {
+            saveFilterValuesToLocalStorage();
+            filterTable(); 
+        });
+
+
+        renderSelectedTags('owner');
+        setupFilter(ownerSearchInput, ownerCheckboxesDropdown, allOwners, 'owner');
+        filterAndRenderCheckboxes('', ownerCheckboxesDropdown, allOwners, 'owner'); 
+
+        renderSelectedTags('center');
+        setupFilter(centerIdSearchInput, centerIdCheckboxesDropdown, allCenters, 'center');
+        filterAndRenderCheckboxes('', centerIdCheckboxesDropdown, allCenters, 'center'); 
+
+        saveFilterValuesToLocalStorage();
+
+
+        function filterTable() {
+            const selectedZones = $('#filterZone').val() ? [$('#filterZone').val().toLowerCase()] : [];
+            
+            const currentSelectedCenterIds = selectedCenters.map(id => id.toLowerCase());
+            const currentSelectedOwners = selectedOwners.map(id => id.toLowerCase());
+
+            const rows = document.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const centerId = row.querySelector('td:nth-child(1)').textContent.toLowerCase();
+                const zone = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                let owner = centerId.toLowerCase();
+
+                if (owner.startsWith('steering wheel')) {
+                    owner = 'autoliv';
+                }
+
+                const ownerMatches = currentSelectedOwners.length === 0 || currentSelectedOwners.some(o => owner.startsWith(o));
+                
+                const centerIdMatches = currentSelectedCenterIds.length === 0 || currentSelectedCenterIds.some(c => centerId === c);
+                const zoneMatches = selectedZones.length === 0 || zone.includes(selectedZones[0]);
+
+                if (zoneMatches && centerIdMatches && ownerMatches) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+
+    
+        function updateTable() {
+            fetch('/api/pending_labels')
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.querySelector('tbody');
+                    tableBody.innerHTML = ''; 
+
+                    data.data.forEach(row => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${row[0]}</td>
+                            <td>${row[1]}</td>
+                            <td class="${row[2] > 50 ? 'high-pending' : 'low-pending'}">${row[2]}</td>
+                            <td class="${row[3] > 0 ? 'high-skips' : 'low-skips'}">${row[3]}</td>
+                            <td class="${row[4] > 0 ? 'high-racks' : 'low-racks'}">${row[4]}</td>
+                        `;
+                        tableBody.appendChild(tr);
+                    });
+
+                    
+                    filterTable();
+                })
+                .catch(error => console.error('Error fetching table data:', error));
+        }
+
+       
+        function updatePreTrimBuffers() {
+            fetch('/api/pre_trim_buffers')
+                .then(response => response.json())
+                .then(data => {
+                    const plant1Buffer = document.querySelector('.pre-trim-buffer-box:nth-child(1)');
+                    const plant2Buffer = document.querySelector('.pre-trim-buffer-box:nth-child(2)');
+
+                    plant1Buffer.style.backgroundColor = data.plant_1_color;
+                    plant1Buffer.querySelector('.value').textContent = data.plant_1_pre_trim;
+
+                    plant2Buffer.style.backgroundColor = data.plant_2_color;
+                    plant2Buffer.querySelector('.value').textContent = data.plant_2_pre_trim;
+                })
+                .catch(error => console.error('Error fetching pre-trim buffer data:', error));
+        }
+
+        
+        setInterval(() => {
+            updateTable();
+            updatePreTrimBuffers();
+        }, 60000); 
+
+    
+        updateTable();
+        updatePreTrimBuffers();
+        filterTable(); 
+
+    });
+     document.addEventListener("DOMContentLoaded", function () {
+    
+    const pendingLabelsBtn = document.getElementById('pendingLabelsBtn');
+    const additionalButtons = document.getElementById('additionalButtons');
+
+    pendingLabelsBtn.addEventListener('click', function() {
+        additionalButtons.classList.toggle('active');
+    });
+
+});
+setInterval(() => {
+            const flipper = document.getElementById("gaaFlipper");
+            flipper.classList.toggle("flip");
+        }, 5000);
+</script>
+</body>
+</html>
