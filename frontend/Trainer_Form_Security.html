@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+        <title>Login</title>
+        <style>
+        body{
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+            background-color: rgb(12, 139, 56);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh; 
+            margin: 0;
+            align-items: center; 
+        }
+        .logo-container{
+            background-color: aliceblue;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 400px;
+           
+           
+        }
+       
+        .input_group{
+            margin-bottom: 20px;
+            text-align: left;
+
+        }
+        /* Corrected selector: .input_group label */
+        .input_group label{
+            margin-bottom: 5px;
+            color: #333;
+            display: block;
+            
+        }
+        /* Corrected selector for input fields */
+        .input_group input[type="text"],
+        .input_group input[type="password"]{
+             width: calc(100% - 20px); /* Adjust for padding */
+             padding: 10px;
+             border: 1px solid #ddd;
+             border-radius: 10px;
+             box-sizing: border-box;
+        }
+        button[type="submit"]{
+            background-color: blue;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            padding: 10px 15px;
+            border: none;
+            color: white;
+        }
+        button[type="submit"]:hover{
+            background-color: #1c0671;
+            transform: scale(1.03);
+        }
+        #message {
+            color: red;
+            margin-top: 10px;
+            text-align: center;
+        }
+        .logo-container {
+        width: 100%;
+        text-align: center; 
+        margin-bottom: 20px; 
+    }
+
+    /* Styles for the logo image */
+    .logo-container img {
+        max-width: 120px; 
+        max-height: 80px;
+        height: auto; 
+        display: block; 
+        margin-left: auto; 
+        margin-right: auto; 
+        border-radius: 15px;
+         filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8))
+    }
+     .logo-container img:hover {
+        transform: scale(1.03);
+    }
+    </style>
+    </head>
+        <body>
+             <!-- <div class="logo-container">
+    <img src="C:\Users\intern.engineer.1\Desktop\static\ARD_Logo.jpg" alt="ARD Logo">
+  
+                <h2>Login</h2>
+                <form id="loginForm" action="/login" method="POST">
+                    <div class="input_group">
+                        <label for="username">username:</label>
+                        <input type="text" id="username" name="username" placeholder="Enter username" autocomplete="off">
+                    </div>
+                    <div class="input_group">
+                        <label for="password">password:</label>
+                        <input type="password" id="password" name="password" placeholder="Enter password" required autocomplete="off">
+                    </div>
+                    <button type="submit">Login</button>
+                    <p id="message"></p>
+                </form>
+            </div>
+            </div> -->
+             <div class="logo-container">
+     <!-- <img src="C:\Users\intern.engineer.1\Desktop\static\ARD_Logo.jpg"alt="ARD Logo"> -->
+       <img src="{{ url_for('static', filename='ARD_Logo.jpg') }}" alt="ARD Logo">
+     
+                <h2>Login</h2>
+                <form id="loginForm" action="/Trainerlogin" method="POST"> 
+                    <div class="input_group">
+                        <label for="username">username:</label>
+                        <input type="text" id="username" name="username" placeholder="Enter your last and first name" autocomplete="off">
+                    </div>
+                    <div class="input_group">
+                        <label for="password">password:</label>
+                        <input type="password" id="password" name="password" placeholder="Enter your employee ID" required autocomplete="off">
+                    </div>
+                    <button type="submit">Login</button>
+                     <p id="message">
+                    {% if message %}{{ message }}{% endif %}
+                </p>
+                </form>
+            </div>
+            </div>
+
+
+            <script>
+                
+            </script>
+        </body>
+</html>
