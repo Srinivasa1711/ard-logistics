@@ -1,0 +1,1023 @@
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ submission_title }} Details</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            padding: 20px;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: left;
+        }
+        h1 {
+            color: #084c18;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+        }
+        .detail-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-left: 4px solid #084c18;
+            border-radius: 4px;
+            word-wrap: break-word; /* Ensures long text wraps */
+        }
+        .detail-item strong {
+            display: block;
+            color: #555;
+            margin-bottom: 5px;
+        }
+        /* Styles for input fields in edit mode */
+        .detail-item input[type="text"],
+        .detail-item input[type="number"],
+        .detail-item input[type="date"],
+        .detail-item select,
+        .detail-item textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box; /* Include padding in width */
+        }
+        .detail-item textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        /* Specific style for radio/checkbox groups */
+        .detail-item .radio-group, .detail-item .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            flex-direction: column; /* Stack radio/checkboxes vertically */
+            gap: 5px; /* Space between options */
+            margin-top: 5px;
+        }
+        .detail-item .radio-group label, .detail-item .checkbox-group label {
+            display: flex;
+            align-items: center;
+            font-weight: normal;
+            margin-bottom: 0;
+            cursor: pointer;
+        }
+        .detail-item .radio-group input, .detail-item .checkbox-group input {
+            width: auto; /* Override 100% width */
+            margin-right: 5px;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: flex-end; /* Align buttons to the right */
+            gap: 10px; /* Space between buttons */
+            margin-top: 30px;
+        }
+        .button-group .btn {
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none; /* For links */
+            text-align: center;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            transform: translateY(-1px);
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+            transform: translateY(-1px);
+        }
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+            border: none;
+        }
+        .btn-success:hover {
+            background-color: #218838;
+            transform: translateY(-1px);
+        }
+        .message-box {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            text-align: center;
+            font-weight: 500;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            max-width: 90%;
+        }
+        .message-box.show {
+            opacity: 1;
+            display: block;
+        }
+        .error-message {
+            background-color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div id="message-box" class="message-box"></div>
+
+    <div class="container">
+        <h1>{{ submission_title }} Details</h1>
+
+        <div id="viewMode">
+            {% if submission %}
+                {% for key, value in submission.items() %}
+                    <div class="detail-item" data-key="{{ key }}">
+                        <strong>{{ key }}:</strong>
+                        {% if value is iterable and not value is string %}
+                            <ul>
+                                {% for item in value %}
+                                    <li>{{ item }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <span>{{ value }}</span>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p style="text-align: center; color: red;">Submission details could not be loaded.</p>
+            {% endif %}
+            <div class="button-group">
+                <button id="editButton" class="btn btn-primary">Edit</button>
+                <a href="{{ referrer_url }}" class="btn btn-secondary">Back to Forms</a>
+            </div>
+        </div>
+
+        <div id="editMode" style="display: none;">
+            <form id="editForm">
+                {# Form fields will be dynamically populated by JavaScript #}
+            </form>
+            <div class="button-group">
+                <button id="updateButton" class="btn btn-success">Update</button>
+                <button id="cancelButton" class="btn btn-secondary">Cancel</button>
+                <a href="{{ referrer_url }}" class="btn btn-secondary">Back to Forms</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const submissionData = JSON.parse('{{ submission | tojson | safe }}');
+            const submissionUuid = '{{ submission_uuid }}';
+            const submissionType = '{{ submission_title }}';
+
+            const viewModeDiv = document.getElementById('viewMode');
+            const editModeDiv = document.getElementById('editMode');
+            const editForm = document.getElementById('editForm');
+            const editButton = document.getElementById('editButton');
+            const updateButton = document.getElementById('updateButton');
+            const cancelButton = document.getElementById('cancelButton');
+            const messageBox = document.getElementById('message-box');
+
+            // Data for Zones and Processes (must match Trainer_Form.html)
+            const fullZoneProcessMapping = { 
+                'Zone 1': ['AGC Liftgate Glass SMP-013', 'AGC Quarter Glass SMP-012', 'AGC Windshield SMP-011', 'Autoliv Repack & Putaway SMP-029', 'Autoliv Sequence SMP-028', 'BOS Cargo SMP-017', 'BOS Rollo Blind SMP-018', 'Dock Specialist', 'FISCHER Tambour Door SMP-015', 'IFA SMP-001', 'Magna Assembly SMP-104', 'Magna Inspection SMP-071', 'Magna Picking SMP-053', 'Magna Scanning SMP-70', 'Magna SMP-045', 'Magna Tester SMP-069', 'Material Handler', 'Valeo DBE SMP-008', 'Welder - SMP-001', 'Helium - SMP-002', 'Headshield - SMP-004', 'POAI Inspection - FT - 005', 'Steel Assembly - SMP-006', 'POAI Picking - FT - 007', 'Service Parts - SMP-008', 'Double Bead Training'],
+                'Zone 2': ['Draxelmaier Gloebox SMP-42', 'Draxelmaier IP Lowers SMP-40', 'Grammer Console SMP-043', 'Grammer Grab Handle SMP-044', 'FORKLIFT', 'MAHLE HVAC SMP-014', 'Matlkon SMP-015', 'Fehrer Console SMP-020', 'Fehrer Armrest SMP-021', 'POAI Helium - FT - 003', 'POAI Headshield - FT - 004', 'POAI Sequence - FT - 006', 'POAI Steel Assembly - FT-007', 'POAI Leader/Picker - FT -008', 'POAI Service Parts - FT-010', 'POAI Manual Sequencing - FT-011', 'POAI Double Bead Training'],
+                'Zone 3': ['Autoneum Mid Carpet SMP-023', 'Autoneum LH/RH Carpet SMP-024', 'Autoneum Picking SMP-064', 'Fujikura Picking/Sequencing SMP-063', 'Fujikura Harness Putaway SMP-065', 'Fujikura Receiving SMP-065', 'Fujikura Retrauable repack SMP-062', 'Fujikura Scanning to Stock SMP-063', 'Fujikura Unpack SMP-064', 'Grammer Armrest SMP-050', 'Grammer Center Console SMP-051', 'Grammer Console Dock Socket SMP-052', 'Kasai Upper Armrest SMP-054', 'Kasai Lower Liftgate SMP-055', 'Material Handler', 'POAI Sweden - FT-001', 'POAI Welder - FT-002', 'POAI Helium - FT-003', 'POAI Headshield - FT-004', 'POAI Sequence - FT-006', 'Grammer Center Console Dock Socket SMP-052', 'Grammer Dock Socket SMP-053', 'Fujikura Scanning to Stock SMP-063', 'Fujikura Harness Rework SMP-061', 'Fujikura Receiving SMP-065', 'Fujikura Retrauable repack SMP-062', 'Fehrer Console SMP-020', 'Fehrer Armrest SMP-021', 'Fujikura Harness Putaway SMP-065', 'Mahle Harness Putaway - SMP-0--'],
+                'RANs/CKD': ['Battery Picking SMP-006', 'Battery Testing SMP-005', 'Dock Specialist', 'Material Handler', 'Parcel Staff SMP-009', 'RANS Picking/Labeling/Shipping FT-009', 'Sequencing GMA-016', 'Swagego - SMP-001', 'Helium - SMP-002', 'Headshield - SMP-004', 'POAI Inspection - FT - 005', 'Steel Assembly - SMP-006', 'POAI Picking - FT - 007', 'Service Parts - SMP-008', 'Double Bead Training']
+            };
+            const allZones = Object.keys(zoneProcessMapping).sort();
+            const allProcesses = Array.from(new Set(Object.values(zoneProcessMapping).flat())).sort();
+
+
+            function showMessage(message, type = 'success') {
+                messageBox.textContent = message;
+                messageBox.className = `message-box show ${type === 'error' ? 'error-message' : ''}`;
+                setTimeout(() => {
+                    messageBox.classList.remove('show');
+                }, 3000);
+            }
+
+            // Function to create an appropriate input field based on the data's key and value
+            function createInputField(key, value) {
+                let inputElement;
+                const fieldId = key.replace(/[^a-zA-Z0-9]/g, '');
+
+                if (key.includes('Date') || (key.includes('Time') && !key.includes('Submission'))) {
+                    inputElement = document.createElement('input');
+                    inputElement.type = 'date';
+                    if (value && typeof value === 'string' && value.length >= 10) {
+                        inputElement.value = value.substring(0, 10);
+                    }
+                } else if (key.includes('Feedback') || key.includes('Struggle Areas') || key.includes('Skill Gap Reasons')) {
+                    inputElement = document.createElement('textarea');
+                    if (Array.isArray(value)) {
+                        inputElement.value = value.join(', ');
+                    } else {
+                        inputElement.value = value;
+                    }
+                } else if (key.includes('Skill Level')) {
+                    inputElement = document.createElement('input');
+                    inputElement.type = 'number';
+                    inputElement.min = "1";
+                    inputElement.max = "10";
+                    inputElement.value = value;
+                } else if (key.includes('Shift')) {
+                    inputElement = document.createElement('select');
+                    ['Shift 1', 'Shift 2'].forEach(optionVal => {
+                        const option = document.createElement('option');
+                        option.value = optionVal;
+                        option.textContent = optionVal;
+                        if (optionVal === value) option.selected = true;
+                        inputElement.appendChild(option);
+                    });
+                } else if (key === 'Give Feedback (Trainer)') {
+                    inputElement = document.createElement('select');
+                    ['yes', 'no'].forEach(optionVal => {
+                        const option = document.createElement('option');
+                        option.value = optionVal;
+                        option.textContent = optionVal.charAt(0).toUpperCase() + optionVal.slice(1);
+                        if (value && optionVal === String(value).toLowerCase()) option.selected = true;
+                        inputElement.appendChild(option);
+                    });
+                } else if (key === 'Trainer Feedback Provided') {
+                     inputElement = document.createElement('select');
+                     ['Yes', 'No (or not yet submitted)'].forEach(optionVal => {
+                        const option = document.createElement('option');
+                        option.value = optionVal;
+                        option.textContent = optionVal;
+                        if (optionVal === value) option.selected = true;
+                        inputElement.appendChild(option);
+                     });
+                }
+                // --- NEW: Handle Zone Dropdown in Edit Mode ---
+                else if (key === 'Zone') {
+                    inputElement = document.createElement('select');
+                    const defaultOption = document.createElement('option');
+                    defaultOption.value = "";
+                    defaultOption.textContent = "Select a zone";
+                    inputElement.appendChild(defaultOption);
+
+                    allZones.forEach(zone => {
+                        const option = document.createElement('option');
+                        option.value = zone;
+                        option.textContent = zone;
+                        if (zone === value) option.selected = true;
+                        inputElement.appendChild(option);
+                    });
+                    // Add event listener to dynamically update Process dropdown when Zone changes
+                    inputElement.addEventListener('change', () => {
+                        const currentProcessValue = submissionData['Process Name']; // Store current process value
+                        populateProcessOptionsForEdit(inputElement.value, currentProcessValue);
+                    });
+                }
+                // --- NEW: Handle Process Dropdown in Edit Mode ---
+                else if (key === 'Process Name') {
+                    inputElement = document.createElement('select');
+                    const defaultOption = document.createElement('option');
+                    defaultOption.value = "";
+                    defaultOption.textContent = "Select a process";
+                    inputElement.appendChild(defaultOption);
+                    // This will be populated based on the currently selected Zone
+                    // For initial load, it will use the Zone from submissionData
+                    const currentZoneValue = submissionData['Zone'];
+                    populateProcessOptionsForEdit(currentZoneValue, value); // Pass current process value to pre-select
+                }
+                // --- Specific Radio Button Handling for Trainee Feedback ---
+                else if (submissionType === 'Trainee Feedback' && (key.startsWith('Q1:') || key.startsWith('Q2:') || key.startsWith('Q3:') || key.startsWith('Q4:') || key.startsWith('Q5:'))) {
+                    const radioGroupDiv = document.createElement('div');
+                    radioGroupDiv.className = 'radio-group';
+                    const options = [];
+                    if (key.startsWith('Q1:') || key.startsWith('Q2:')) {
+                        options.push('Strongly Agree', 'Agree', 'Neutral', 'Disagree', 'Strongly Disagree');
+                    } else if (key.startsWith('Q3:')) {
+                        options.push('Excellent', 'Good', 'Average', 'Fair', 'Poor');
+                    } else if (key.startsWith('Q4:')) {
+                        options.push('Always', 'Often', 'Sometimes', 'Rarely', 'Never');
+                    } else if (key.startsWith('Q5:')) {
+                        options.push('Far too much information', 'A bit too much information', 'Just right / Good Balance', 'A bit too little information', 'Far too little information');
+                    }
+
+                    options.forEach(optionText => {
+                        const label = document.createElement('label');
+                        const radio = document.createElement('input');
+                        radio.type = 'radio';
+                        radio.name = fieldId;
+                        radio.value = optionText;
+                        if (optionText === value) {
+                            radio.checked = true;
+                        }
+                        label.appendChild(radio);
+                        label.append(optionText);
+                        radioGroupDiv.appendChild(label);
+                    });
+                    inputElement = radioGroupDiv;
+                }
+                // --- End Specific Radio Button Handling ---
+                else { // Default to text input for all other fields
+                    inputElement = document.createElement('input');
+                    inputElement.type = 'text';
+                    inputElement.value = value;
+                }
+
+                if (inputElement.nodeName !== 'DIV') {
+                    inputElement.id = fieldId;
+                    inputElement.name = key;
+                }
+                return inputElement;
+            }
+
+            // NEW: Function to populate Process options specifically for edit mode
+            function populateProcessOptionsForEdit(selectedZone, currentProcessValue) {
+                const processSelectElement = editForm.querySelector('[name="Process Name"]');
+                if (!processSelectElement) return; // Exit if process select isn't found
+
+                processSelectElement.innerHTML = '<option value="" class="select">Select a process</option>';
+                processSelectElement.disabled = true;
+
+                if (selectedZone && zoneProcessMapping[selectedZone]) {
+                    zoneProcessMapping[selectedZone].forEach(process => {
+                        const option = document.createElement('option');
+                        option.value = process;
+                        option.textContent = process;
+                        if (process === currentProcessValue) option.selected = true; // Pre-select if it matches
+                        processSelectElement.appendChild(option);
+                    });
+                    processSelectElement.disabled = false;
+                }
+            }
+
+
+            // Populate edit form with current data
+            function populateEditForm() {
+                editForm.innerHTML = '';
+                for (const key in submissionData) {
+                    if (submissionData.hasOwnProperty(key)) {
+                        const value = submissionData[key];
+
+                        if (key === 'Submission Time' || key === 'Submitted By User' || key === 'Type') {
+                             const detailItem = document.createElement('div');
+                             detailItem.className = 'detail-item';
+                             detailItem.innerHTML = `<strong>${key}:</strong> <span>${value}</span>`;
+                             editForm.appendChild(detailItem);
+                             continue;
+                        }
+
+                        const detailItem = document.createElement('div');
+                        detailItem.className = 'detail-item';
+
+                        const label = document.createElement('label');
+                        label.textContent = key + ':';
+                        label.style.fontWeight = 'bold';
+                        label.style.display = 'block';
+                        label.style.marginBottom = '5px';
+                        detailItem.appendChild(label);
+
+                        const inputField = createInputField(key, value);
+                        detailItem.appendChild(inputField);
+                        editForm.appendChild(detailItem);
+                    }
+                }
+            }
+
+            // Toggle between view and edit mode
+            function toggleEditMode(isEdit) {
+                if (isEdit) {
+                    populateEditForm();
+                    viewModeDiv.style.display = 'none';
+                    editModeDiv.style.display = 'block';
+                } else {
+                    viewModeDiv.style.display = 'block';
+                    editModeDiv.style.display = 'none';
+                    location.reload();
+                }
+            }
+
+            // Event listeners for buttons
+            editButton.addEventListener('click', () => toggleEditMode(true));
+            cancelButton.addEventListener('click', () => toggleEditMode(false));
+
+            updateButton.addEventListener('click', async () => {
+                const updatedData = {};
+                const formElements = editForm.elements;
+
+                for (let i = 0; i < formElements.length; i++) {
+                    const element = formElements[i];
+                    if (element.name) {
+                        if (element.type === 'checkbox') {
+                            if (!updatedData[element.name]) {
+                                updatedData[element.name] = [];
+                            }
+                            if (element.checked) {
+                                updatedData[element.name].push(element.value);
+                            }
+                        } else if (element.type === 'radio') {
+                            if (element.checked) {
+                                updatedData[element.name] = element.value;
+                            }
+                        } else {
+                            updatedData[element.name] = element.value;
+                        }
+                    }
+                }
+
+                if (updatedData.hasOwnProperty('Give Feedback (Trainer)')) {
+                    updatedData['Give Feedback (Trainer)'] = updatedData['Give Feedback (Trainer)'].toLowerCase();
+                }
+                if (updatedData.hasOwnProperty('Trainer Feedback Provided')) {
+                    if (updatedData['Trainer Feedback Provided'] === 'No (or not yet submitted)') {
+                        updatedData['Trainer Feedback Provided'] = 'No';
+                    } else if (updatedData['Trainer Feedback Provided'] === 'Yes') {
+                        updatedData['Trainer Feedback Provided'] = 'Yes';
+                    }
+                }
+
+                if (updatedData.hasOwnProperty('Struggle Areas (Trainee)') && typeof updatedData['Struggle Areas (Trainee)'] === 'string') {
+                    updatedData['Struggle Areas (Trainee)'] = updatedData['Struggle Areas (Trainee)'].split(',').map(s => s.trim()).filter(s => s);
+                }
+                if (updatedData.hasOwnProperty('Skill Gap Reasons (Trainee)') && typeof updatedData['Skill Gap Reasons (Trainee)'] === 'string') {
+                    updatedData['Skill Gap Reasons (Trainee)'] = updatedData['Skill Gap Reasons (Trainee)'].split(',').map(s => s.trim()).filter(s => s);
+                }
+
+
+                console.log('Sending update:', updatedData);
+
+                try {
+                    const response = await fetch(`/update_submission/${submissionUuid}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(updatedData)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showMessage(result.message, 'success');
+                        setTimeout(() => { location.reload(); }, 1500);
+
+                    } else {
+                        showMessage(result.message, 'error');
+                    }
+                } catch (error) {
+                    console.error('Error updating form:', error);
+                    showMessage(`An error occurred: ${error.message}`, 'error');
+                }
+            });
+        });
+    </script>
+</body>
+</html> -->
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ submission_title }} Details</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            padding: 20px;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: left;
+        }
+        h1 {
+            color: #084c18;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+        }
+        .detail-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-left: 4px solid #084c18;
+            border-radius: 4px;
+            word-wrap: break-word; /* Ensures long text wraps */
+        }
+        .detail-item strong {
+            display: block;
+            color: #555;
+            margin-bottom: 5px;
+        }
+        /* Styles for input fields in edit mode */
+        .detail-item input[type="text"],
+        .detail-item input[type="number"],
+        .detail-item input[type="date"],
+        .detail-item select,
+        .detail-item textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box; /* Include padding in width */
+        }
+        .detail-item textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        /* Specific style for radio/checkbox groups */
+        .detail-item .radio-group, .detail-item .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            flex-direction: column; /* Stack radio/checkboxes vertically */
+            gap: 5px; /* Space between options */
+            margin-top: 5px;
+        }
+        .detail-item .radio-group label, .detail-item .checkbox-group label {
+            display: flex;
+            align-items: center;
+            font-weight: normal;
+            margin-bottom: 0;
+            cursor: pointer;
+        }
+        .detail-item .radio-group input, .detail-item .checkbox-group input {
+            width: auto; /* Override 100% width */
+            margin-right: 5px;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: flex-end; /* Align buttons to the right */
+            gap: 10px; /* Space between buttons */
+            margin-top: 30px;
+        }
+        .button-group .btn {
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none; /* For links */
+            text-align: center;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            transform: translateY(-1px);
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+            transform: translateY(-1px);
+        }
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+            border: none;
+        }
+        .btn-success:hover {
+            background-color: #218838;
+            transform: translateY(-1px);
+        }
+        .message-box {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            text-align: center;
+            font-weight: 500;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            max-width: 90%;
+        }
+        .message-box.show {
+            opacity: 1;
+            display: block;
+        }
+        .error-message {
+            background-color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div id="message-box" class="message-box"></div>
+
+    <div class="container">
+        <h1>{{ submission_title }} Details</h1>
+
+        <div id="viewMode">
+            {% if submission %}
+                {% for key, value in submission.items() %}
+                    <div class="detail-item" data-key="{{ key }}">
+                        <strong>{{ key }}:</strong>
+                        {% if value is iterable and not value is string %}
+                            <ul>
+                                {% for item in value %}
+                                    <li>{{ item }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <span>{{ value }}</span>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p style="text-align: center; color: red;">Submission details could not be loaded.</p>
+            {% endif %}
+            <div class="button-group">
+                <button id="editButton" class="btn btn-primary">Edit</button>
+                <a href="{{ referrer_url }}" class="btn btn-secondary">Back to Forms</a>
+            </div>
+        </div>
+
+        <div id="editMode" style="display: none;">
+            <form id="editForm">
+                {# Form fields will be dynamically populated by JavaScript #}
+            </form>
+            <div class="button-group">
+                <button id="updateButton" class="btn btn-success">Update</button>
+                <button id="cancelButton" class="btn btn-secondary">Cancel</button>
+                <a href="{{ referrer_url }}" class="btn btn-secondary">Back to Forms</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const submissionData = JSON.parse('{{ submission | tojson | safe }}');
+            const submissionUuid = '{{ submission_uuid }}';
+            const submissionType = '{{ submission_title }}';
+
+            const viewModeDiv = document.getElementById('viewMode');
+            const editModeDiv = document.getElementById('editMode');
+            const editForm = document.getElementById('editForm');
+            const editButton = document.getElementById('editButton');
+            const updateButton = document.getElementById('updateButton');
+            const cancelButton = document.getElementById('cancelButton');
+            const messageBox = document.getElementById('message-box');
+
+            // Data for Zones and Processes (MUST match Trainer_Form.html AND Training_log_Admin_Dashboard.html)
+            const zoneProcessMapping = {
+                'Zone 1': ['AGC Liftgate Glass SMP-013', 'AGC Quarter Glass SMP-012', 'AGC Windshield SMP-011', 'Autoliv Repack & Putaway SMP-029', 'Autoliv Sequence SMP-028', 'BOS Cargo SMP-017', 'BOS Rollo Blind SMP-018', 'Dock Specialist', 'FISCHER Tambour Door SMP-015', 'IFA SMP-001', 'Magna Assembly SMP-104', 'Magna Inspection SMP-071', 'Magna Picking SMP-053', 'Magna Scanning SMP-70', 'Magna SMP-045', 'Magna Tester SMP-069', 'Material Handler', 'Valeo DBE SMP-008', 'Welder - SMP-001', 'Helium - SMP-002', 'Headshield - SMP-004', 'POAI Inspection - FT - 005', 'Steel Assembly - SMP-006', 'POAI Picking - FT - 007', 'Service Parts - SMP-008', 'Double Bead Training'],
+                'Zone 2': ['Draxelmaier Gloebox SMP-42', 'Draxelmaier IP Lowers SMP-40', 'Grammer Console SMP-043', 'Grammer Grab Handle SMP-044', 'FORKLIFT', 'MAHLE HVAC SMP-014', 'Matlkon SMP-015', 'Fehrer Console SMP-020', 'Fehrer Armrest SMP-021', 'POAI Helium - FT - 003', 'POAI Headshield - FT - 004', 'POAI Sequence - FT - 006', 'POAI Steel Assembly - FT-007', 'POAI Leader/Picker - FT -008', 'POAI Service Parts - FT-010', 'POAI Manual Sequencing - FT-011', 'POAI Double Bead Training'],
+                'Zone 3': ['Autoneum Mid Carpet SMP-023', 'Autoneum LH/RH Carpet SMP-024', 'Autoneum Picking SMP-064', 'Fujikura Picking/Sequencing SMP-063', 'Fujikura Harness Putaway SMP-065', 'Fujikura Receiving SMP-065', 'Fujikura Retrauable repack SMP-062', 'Fujikura Scanning to Stock SMP-063', 'Fujikura Unpack SMP-064', 'Grammer Armrest SMP-050', 'Grammer Center Console SMP-051', 'Grammer Console Dock Socket SMP-052', 'Kasai Upper Armrest SMP-054', 'Kasai Lower Liftgate SMP-055', 'Material Handler', 'POAI Sweden - FT-001', 'POAI Welder - FT-002', 'POAI Helium - FT-003', 'POAI Headshield - FT-004', 'POAI Sequence - FT-006', 'Grammer Center Console Dock Socket SMP-052', 'Grammer Dock Socket SMP-053', 'Fujikura Scanning to Stock SMP-063', 'Fujikura Harness Rework SMP-061', 'Fujikura Receiving SMP-065', 'Fujikura Retrauable repack SMP-062', 'Fehrer Console SMP-020', 'Fehrer Armrest SMP-021', 'Fujikura Harness Putaway SMP-065', 'Mahle Harness Putaway - SMP-0--'],
+                'RANs/CKD': ['Battery Picking SMP-006', 'Battery Testing SMP-005', 'Dock Specialist', 'Material Handler', 'Parcel Staff SMP-009', 'RANS Picking/Labeling/Shipping FT-009', 'Sequencing GMA-016', 'Swagego - SMP-001', 'Helium - SMP-002', 'Headshield - SMP-004', 'POAI Inspection - FT - 005', 'Steel Assembly - SMP-006', 'POAI Picking - FT - 007', 'Service Parts - SMP-008', 'Double Bead Training']
+            };
+            const allZones = Object.keys(zoneProcessMapping).sort();
+            const allProcesses = Array.from(new Set(Object.values(zoneProcessMapping).flat())).sort();
+
+
+            function showMessage(message, type = 'success') {
+                messageBox.textContent = message;
+                messageBox.className = `message-box show ${type === 'error' ? 'error-message' : ''}`;
+                setTimeout(() => {
+                    messageBox.classList.remove('show');
+                }, 3000);
+            }
+
+            // Function to create an appropriate input field based on the data's key and value
+            function createInputField(key, value) {
+                let inputElement;
+                const fieldId = key.replace(/[^a-zA-Z0-9]/g, '');
+
+                if (key.includes('Date') || (key.includes('Time') && !key.includes('Submission'))) {
+                    inputElement = document.createElement('input');
+                    inputElement.type = 'date';
+                    if (value && typeof value === 'string' && value.length >= 10) {
+                        inputElement.value = value.substring(0, 10);
+                    }
+                } else if (key.includes('Feedback') || key.includes('Struggle Areas') || key.includes('Skill Gap Reasons')) {
+                    inputElement = document.createElement('textarea');
+                    if (Array.isArray(value)) {
+                        inputElement.value = value.join(', ');
+                    } else {
+                        inputElement.value = value;
+                    }
+                } else if (key.includes('Skill Level')) {
+                    inputElement = document.createElement('input');
+                    inputElement.type = 'number';
+                    inputElement.min = "1";
+                    inputElement.max = "10";
+                    inputElement.value = value;
+                } else if (key.includes('Shift')) {
+                    inputElement = document.createElement('select');
+                    ['Shift 1', 'Shift 2'].forEach(optionVal => {
+                        const option = document.createElement('option');
+                        option.value = optionVal;
+                        option.textContent = optionVal;
+                        if (optionVal === value) option.selected = true;
+                        inputElement.appendChild(option);
+                    });
+                } else if (key === 'Give Feedback (Trainer)') {
+                    inputElement = document.createElement('select');
+                    ['yes', 'no'].forEach(optionVal => {
+                        const option = document.createElement('option');
+                        option.value = optionVal;
+                        option.textContent = optionVal.charAt(0).toUpperCase() + optionVal.slice(1);
+                        if (value && optionVal === String(value).toLowerCase()) option.selected = true;
+                        inputElement.appendChild(option);
+                    });
+                } else if (key === 'Trainer Feedback Provided') {
+                     inputElement = document.createElement('select');
+                     ['Yes', 'No (or not yet submitted)'].forEach(optionVal => {
+                        const option = document.createElement('option');
+                        option.value = optionVal;
+                        option.textContent = optionVal;
+                        if (optionVal === value) option.selected = true;
+                        inputElement.appendChild(option);
+                     });
+                }
+                // --- Handle Zone Dropdown in Edit Mode ---
+                else if (key === 'Zone') {
+                    inputElement = document.createElement('select');
+                    const defaultOption = document.createElement('option');
+                    defaultOption.value = "";
+                    defaultOption.textContent = "Select a zone";
+                    inputElement.appendChild(defaultOption);
+
+                    allZones.forEach(zone => {
+                        const option = document.createElement('option');
+                        option.value = zone;
+                        option.textContent = zone;
+                        if (zone === value) option.selected = true;
+                        inputElement.appendChild(option);
+                    });
+                    // Add event listener to dynamically update Process dropdown when Zone changes
+                    inputElement.addEventListener('change', () => {
+                        // Get the currently selected Process Name from the *live form* (if it exists)
+                        // or from submissionData if it's the initial populate.
+                        const processNameField = editForm.querySelector('[name="Process Name"]');
+                        const currentProcessValue = processNameField ? processNameField.value : submissionData['Process Name'];
+                        populateProcessOptionsForEdit(inputElement.value, currentProcessValue);
+                    });
+                }
+                // --- Handle Process Dropdown in Edit Mode ---
+                else if (key === 'Process Name') {
+                    inputElement = document.createElement('select');
+                    const defaultOption = document.createElement('option');
+                    defaultOption.value = "";
+                    defaultOption.textContent = "Select a process";
+                    inputElement.appendChild(defaultOption);
+                    // This will be populated based on the currently selected Zone from the form's state
+                    // For initial load, it uses the Zone from submissionData
+                    const currentZoneValue = submissionData['Zone']; // This is the initial value
+                    // Pass current process value to pre-select it
+                    populateProcessOptionsForEdit(currentZoneValue, value); 
+                }
+                // --- Specific Radio Button Handling for Trainee Feedback ---
+                else if (submissionType === 'Trainee Feedback' && (key.startsWith('Q1:') || key.startsWith('Q2:') || key.startsWith('Q3:') || key.startsWith('Q4:') || key.startsWith('Q5:'))) {
+                    const radioGroupDiv = document.createElement('div');
+                    radioGroupDiv.className = 'radio-group';
+                    const options = [];
+                    if (key.startsWith('Q1:') || key.startsWith('Q2:')) {
+                        options.push('Strongly Agree', 'Agree', 'Neutral', 'Disagree', 'Strongly Disagree');
+                    } else if (key.startsWith('Q3:')) {
+                        options.push('Excellent', 'Good', 'Average', 'Fair', 'Poor');
+                    } else if (key.startsWith('Q4:')) {
+                        options.push('Always', 'Often', 'Sometimes', 'Rarely', 'Never');
+                    } else if (key.startsWith('Q5:')) {
+                        options.push('Far too much information', 'A bit too much information', 'Just right / Good Balance', 'A bit too little information', 'Far too little information');
+                    }
+
+                    options.forEach(optionText => {
+                        const label = document.createElement('label');
+                        const radio = document.createElement('input');
+                        radio.type = 'radio';
+                        radio.name = fieldId;
+                        radio.value = optionText;
+                        if (optionText === value) {
+                            radio.checked = true;
+                        }
+                        label.appendChild(radio);
+                        label.append(optionText);
+                        radioGroupDiv.appendChild(label);
+                    });
+                    inputElement = radioGroupDiv;
+                }
+                // --- End Specific Radio Button Handling ---
+                else { // Default to text input for all other fields
+                    inputElement = document.createElement('input');
+                    inputElement.type = 'text';
+                    inputElement.value = value;
+                }
+
+                if (inputElement.nodeName !== 'DIV') {
+                    inputElement.id = fieldId;
+                    inputElement.name = key;
+                }
+                return inputElement;
+            }
+
+            // Function to populate Process options specifically for edit mode
+            function populateProcessOptionsForEdit(selectedZone, currentProcessValue) {
+                const processSelectElement = editForm.querySelector('[name="Process Name"]');
+                if (!processSelectElement) return;
+
+                processSelectElement.innerHTML = '<option value="" class="select">Select a process</option>';
+                processSelectElement.disabled = true;
+
+                if (selectedZone && zoneProcessMapping[selectedZone]) {
+                    zoneProcessMapping[selectedZone].forEach(process => {
+                        const option = document.createElement('option');
+                        option.value = process;
+                        option.textContent = process;
+                        if (process === currentProcessValue) option.selected = true;
+                        processSelectElement.appendChild(option); 
+                    });
+                    processSelectElement.disabled = false;
+                }
+            }
+
+
+            // Populate edit form with current data
+            function populateEditForm() {
+                editForm.innerHTML = '';
+                for (const key in submissionData) {
+                    if (submissionData.hasOwnProperty(key)) {
+                        const value = submissionData[key];
+
+                        if (key === 'Submission Time' || key === 'Submitted By User' || key === 'Type') {
+                             const detailItem = document.createElement('div');
+                             detailItem.className = 'detail-item';
+                             detailItem.innerHTML = `<strong>${key}:</strong> <span>${value}</span>`;
+                             editForm.appendChild(detailItem);
+                             continue;
+                        }
+
+                        const detailItem = document.createElement('div');
+                        detailItem.className = 'detail-item';
+
+                        const label = document.createElement('label');
+                        label.textContent = key + ':';
+                        label.style.fontWeight = 'bold';
+                        label.style.display = 'block';
+                        label.style.marginBottom = '5px';
+                        detailItem.appendChild(label);
+
+                        const inputField = createInputField(key, value);
+                        detailItem.appendChild(inputField);
+                        editForm.appendChild(detailItem);
+                    }
+                }
+            }
+
+            // Toggle between view and edit mode
+            function toggleEditMode(isEdit) {
+                if (isEdit) {
+                    populateEditForm();
+                    // Crucially, after populating the form, trigger the process dropdown's population
+                    // if it's a trainer form and the Zone field exists.
+                    if (submissionType === 'Trainer Training Log' && submissionData['Zone'] !== undefined && submissionData['Zone'] !== null) {
+                         // Find the Zone select element after the form has been populated
+                         const zoneSelectElement = editForm.querySelector('[name="Zone"]');
+                         if (zoneSelectElement) {
+                             // Use requestAnimationFrame to ensure the DOM has updated after populateEditForm
+                             // and then call populateProcessOptionsForEdit directly.
+                             requestAnimationFrame(() => {
+                                 const currentProcessName = submissionData['Process Name']; // Initial value from fetched data
+                                 populateProcessOptionsForEdit(zoneSelectElement.value, currentProcessName);
+                             });
+                         }
+                    }
+
+                    viewModeDiv.style.display = 'none';
+                    editModeDiv.style.display = 'block';
+                } else {
+                    viewModeDiv.style.display = 'block';
+                    editModeDiv.style.display = 'none';
+                    location.reload();
+                }
+            }
+
+            // Event listeners for buttons
+            editButton.addEventListener('click', () => toggleEditMode(true));
+            cancelButton.addEventListener('click', () => toggleEditMode(false));
+
+            updateButton.addEventListener('click', async () => {
+                const updatedData = {};
+                const formElements = editForm.elements;
+
+                for (let i = 0; i < formElements.length; i++) {
+                    const element = formElements[i];
+                    if (element.name) {
+                        if (element.type === 'checkbox') {
+                            if (!updatedData[element.name]) {
+                                updatedData[element.name] = [];
+                            }
+                            if (element.checked) {
+                                updatedData[element.name].push(element.value);
+                            }
+                        } else if (element.type === 'radio') {
+                            if (element.checked) {
+                                updatedData[element.name] = element.value;
+                            }
+                        } else {
+                            updatedData[element.name] = element.value;
+                        }
+                    }
+                }
+
+                if (updatedData.hasOwnProperty('Give Feedback (Trainer)')) {
+                    updatedData['Give Feedback (Trainer)'] = updatedData['Give Feedback (Trainer)'].toLowerCase();
+                }
+                if (updatedData.hasOwnProperty('Trainer Feedback Provided')) {
+                    if (updatedData['Trainer Feedback Provided'] === 'No (or not yet submitted)') {
+                        updatedData['Trainer Feedback Provided'] = 'No';
+                    } else if (updatedData['Trainer Feedback Provided'] === 'Yes') {
+                        updatedData['Trainer Feedback Provided'] = 'Yes';
+                    }
+                }
+
+                if (updatedData.hasOwnProperty('Struggle Areas (Trainee)') && typeof updatedData['Struggle Areas (Trainee)'] === 'string') {
+                    updatedData['Struggle Areas (Trainee)'] = updatedData['Struggle Areas (Trainee)'].split(',').map(s => s.trim()).filter(s => s);
+                }
+                if (updatedData.hasOwnProperty('Skill Gap Reasons (Trainee)') && typeof updatedData['Skill Gap Reasons (Trainee)'] === 'string') {
+                    updatedData['Skill Gap Reasons (Trainee)'] = updatedData['Skill Gap Reasons (Trainee)'].split(',').map(s => s.trim()).filter(s => s);
+                }
+
+
+                console.log('Sending update:', updatedData);
+
+                try {
+                    const response = await fetch(`/update_submission/${submissionUuid}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(updatedData)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showMessage(result.message, 'success');
+                        setTimeout(() => { location.reload(); }, 1500);
+
+                    } else {
+                        showMessage(result.message, 'error');
+                    }
+                } catch (error) {
+                    console.error('Error updating form:', error);
+                    showMessage(`An error occurred: ${error.message}`, 'error');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
