@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Training Log Admin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+    <style>
+        body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f0f2f5;
+        padding: 20px;
+        font-weight: normal;
+        /* color: #5ed58e; */
+        color: #343a40;
+    }
+    .banner{
+        width: 100%;
+        background-image: linear-gradient(to right,  #269a3d, #1a8135);
+        text-align: center;
+        padding: 25px 0;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        filter: drop-shadow(0 0 10px rgba(200, 200, 200, 0.4));
+        border-bottom: 3px solid #e0e0e0;
+    }
+    .banner img {
+        width: 200px;
+        height: 160px;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 128, 0, 0.4); 
+        filter: brightness(1.1) contrast(1.1); 
+
+    }
+    .banner img:hover {
+        transform: scale(1.03);
+        box-shadow: 0 10px 20px rgba(0, 128, 0, 0.6);
+    }
+    
+    nav {
+        margin-bottom: 30px;
+        text-align: center;
+        background-color: #ffffff;
+        padding: 15px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 30px;
+    }
+    nav .btn {
+        margin: 0;
+        text-decoration: none;
+        color: white;
+        background-color: #084c18;
+        border-color: #007bff;
+        border: none;
+        border-radius: 30px;
+        padding: 16px 35px;
+        font-size: 1.1em;
+        font-weight: bold;
+        transition: all 0.3s ease-in-out;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        cursor: pointer;
+        min-width: 180px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background-image: linear-gradient(to right, #007bff, #0056b3);
+    }
+    nav .btn:hover {
+        background-color: #0056b3;
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+        background-image: linear-gradient(to right, #0056b3, #003d82);
+    }
+     #homepagebtn { 
+            background-color: #6c757d; 
+            background-image: linear-gradient(to right, #6c757d, #5a6268); 
+        }
+        #homepagebtn:hover {
+            background-color: #5a6268;
+            background-image: linear-gradient(to right, #5a6268, #495057);
+        }
+    .forms-dropdown-container {
+        display: none;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        width: 100%;
+        margin-top: 15px;
+        padding: 10px;
+        background-color: #f8f9fa;
+        border-radius: 12px; 
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08); 
+    }
+    .forms-dropdown-container.active {
+        display: flex;
+    }
+    .forms-dropdown-container .btn {
+        background-color: #6f42c1;
+        background-image: linear-gradient(to right, #6f42c1, #563d7c);
+        border: none;
+        padding: 6px 12px;
+        font-size: 0.8em;
+        min-width: 80px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        text-transform: none;
+        letter-spacing: 0;
+        border-radius: 20px;
+    }
+    .forms-dropdown-container .btn:hover {
+        background-color: #563d7c;
+        background-image: linear-gradient(to right, #563d7c, #4a3465);
+        transform: translateY(-2px) scale(1.01);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    /* General styles for all content display sections */
+    .content-section {
+        background-color: #ffffff;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        margin: 15px auto;
+        min-height: 250px;
+        min-height: 1200px;
+        display: none;
+        opacity: 0;
+        transition: opacity 0.5s ease-in-out;
+    }
+    .content-section.active {
+        display: block;
+        opacity: 1;
+    }
+
+    .content-section h2 {
+        color: #058d20;
+        text-align: center;
+        margin-bottom: 15px;
+        font-size: 2em;
+        font-weight: 600;
+        margin-top: 0;
+    }
+    .content-section table {
+        width: 100%;
+        border-collapse: collapse;
+        border-spacing: 0;
+        overflow: hidden;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    .content-section th,
+        .content-section td {
+            border: 1px solid #e9ecef; /* Very light border */
+            padding: 10px;
+            text-align: left;
+            color: #495057;
+        }
+        .content-section th {
+            background-color: #e2f0ff; /* Light blueish tint for headers */
+            font-weight: 700;
+            color: #343a40;
+            text-transform: uppercase;
+            font-size: 0.9em;
+        }
+    .content-section td:nth-child(8) { 
+        width: 12%; 
+        min-width: 90px; 
+        white-space: normal; 
+    }
+    .content-section td:nth-child(9) { 
+        width: 20%; 
+        min-width: 120px;
+        white-space: normal;
+    }
+    .content-section td:nth-child(2), /* Logged In User */
+    .content-section td:nth-child(3) /* Employee ID */
+    {
+        min-width: 100px;
+    }
+    
+    .content-section tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+    .content-section tr:hover {
+        background-color: #f1f1f1;
+    }
+    /* Style for the link within the table */
+    .content-section td a {
+        color: #007bff;
+        text-decoration: none;
+    }
+    .content-section td a:hover {
+        text-decoration: underline;
+        color: #563d7c;
+    }
+
+    /* Styles for the filter container */
+    .filter-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 20px;
+        justify-content: center;
+        align-items: center;
+        padding: 10px;
+        background-color: #f0f2f5;
+        border-radius: 5px;
+    }
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        position: relative;
+    }
+    .filter-group label {
+        font-size: 0.9em;
+        color: #555;
+        margin-bottom: 5px;
+    }
+    .filter-group input[type="text"],
+    .filter-group select {
+        padding: 8px 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 1em;
+        width: 200px;
+        box-sizing: border-box;
+    }
+
+    /* Styles for the custom dropdown with checkboxes */
+    .multiselect-dropdown {
+        position: relative;
+        display: inline-block;
+        width: 200px;
+    }
+
+    .multiselect-select-box {
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 8px 10px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        box-sizing: border-box;
+        font-size: 1em;
+        color: #333;
+    }
+
+    .multiselect-select-box::after {
+        content: '\25BC';
+        font-size: 0.8em;
+        margin-left: 5px;
+    }
+
+    .multiselect-checkboxes {
+        display: none;
+        position: absolute;
+        border: 1px solid #ddd;
+        background-color: #fff;
+        max-height: 150px;
+        overflow-y: auto;
+        width: 100%;
+        z-index: 100;
+        border-radius: 4px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        left: 0;
+        top: 100%;
+    }
+
+    .multiselect-checkboxes label {
+        display: flex; /* Use flex for proper alignment of checkbox and text */
+        align-items: center; /* Vertically align items */
+        padding: 8px;
+        cursor: pointer;
+        font-size: 0.9em;
+        color: #333;
+        margin-bottom: 0;
+    }
+    /* Style for the search input inside multiselect-checkboxes */
+    .multiselect-checkboxes input[type="text"] {
+        width: calc(100% - 16px); /* Adjust width considering padding */
+        padding: 8px;
+        margin: 8px; /* Margin to separate from checkboxes */
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+
+    .multiselect-checkboxes label:hover {
+        background-color: #f2f2f2;
+    }
+
+    .multiselect-checkboxes input[type="checkbox"] {
+        margin-right: 5px;
+    }
+
+    #homepagebtn{
+        background-color: rgb(119, 188, 119);
+        color: white;
+        font-weight: bold;
+    }
+    #homepagebtn:hover {
+        background-color: #28b8c8;
+        border-color: #004085;
+    }
+     .header {
+            text-align: center; /* Center the heading within its container */
+            margin-top: 40px; /* Space above the header section */
+        }
+
+        .header h1 {
+            /* Text Color & Gradient */
+            background-image: linear-gradient(to right, #343a40, #6c757d); /* Deep gray to muted gray gradient */
+            -webkit-background-clip: text; /* Clips the gradient to the text shape */
+            -webkit-text-fill-color: transparent; /* Makes the text transparent so the gradient shows through */
+            
+            /* Font & Spacing */
+            font-size: 2.20em; /* Good, prominent size */
+            font-weight: 900; /* Extra bold */
+            text-transform: uppercase; /* All caps for strong presence */
+            letter-spacing: 3px; /* More spacing between letters */
+            margin: 0 auto; /* Auto margins for horizontal centering, 0 top/bottom */
+            padding: 10px 0; /* Vertical padding around the text */
+            display: inline-block; /* Allows padding and text-align: center on the parent */
+            
+            /* Visual Effects (Initial State of Animation) */
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Soft shadow for depth */
+            position: relative; /* Needed for pseudo-elements */
+            
+            /* Animation Properties - Applies to changes in opacity and transform */
+            /* Default state (visible and in place) is defined here */
+            opacity: 1; 
+            transform: translateY(0);
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out; /* Smooth animation for these properties */
+        }
+
+        /* Class to trigger the STARTING point of the animation (makes it hidden and slightly moved) */
+        .header h1.animate-heading-effect {
+            opacity: 0; /* Start hidden */
+            transform: translateY(-20px); /* Start slightly above its final position */
+            /* The transition from here back to the default state (opacity 1, translateY 0) will be smooth */
+        }
+
+        /* Optional: Add a subtle line below the heading for more emphasis */
+        .header h1::after {
+            content: '';
+            display: block;
+            width: 60px; /* Width of the line */
+            height: 3px; /* Thickness of the line */
+            background-color: #007bff; /* Blue line matching buttons */
+            margin: 10px auto 0; /* Centered below text with margin */
+            border-radius: 1.5px; /* Slightly rounded ends */
+        }
+
+
+    </style>
+</head>
+<body>
+
+    <div class="banner">
+        <img src="{{ url_for('static', filename='ARD_Logo.jpg') }}" alt="ARD Logo">
+    </div>
+
+    <nav class="button-nav">
+           <button class="btn btn-success" onclick="window.location.href='/charts'">Dashboard</button>
+        <button class="btn btn-success" id="formsParentBtn">Forms</button>
+
+        <button class="btn btn-success" onclick="window.location.href='/efficiency_report'">Efficiency Report</button>
+        <button class="btn btn-success" id="loginActivityBtn">Login Activity</button>
+        <button class="btn btn-success" onclick="window.location.href='/racks_pending'">Assign</button>
+        <button class="btn btn-success" id="homepagebtn" onclick="window.location.href='/'">Home Page</button>
+    </nav>
+
+    <div class="header"><h1>Training Log</h1></div>
+
+    <div id="loginActivityContent" class="content-section">
+        <h2>User Login Activity</h2>
+        <p id="loginLoadingMessage" style="text-align: center; display: none;">Loading login activity...</p>
+        <table id="loginActivityTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Login Time</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div id="formSubmissionsContent" class="content-section">
+        <h2 id="formSubmissionsTitle">All Submitted Forms</h2>
+
+        <div class="filter-container">
+            <div class="filter-group">
+                <label for="employeeIdSearch">Search by Employee ID:</label>
+                <input type="text" id="employeeIdSearch" placeholder="Employee ID">
+            </div>
+            <div class="filter-group">
+                <label for="shiftFilter">Filter by Shift:</label>
+                <select id="shiftFilter">
+                    <option value="">All Shifts</option>
+                    <option value="Shift 1">Shift 1</option>
+                    <option value="Shift 2">Shift 2</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="zoneFilterSelect">Filter by Zone:</label>
+                <div class="multiselect-dropdown">
+                    <div class="multiselect-select-box" id="zoneSelectBox">Select Zones</div>
+                    <div class="multiselect-checkboxes" id="zoneCheckboxes">
+                        </div>
+                </div>
+            </div>
+            <div class="filter-group">
+                <label for="processFilterSelect">Filter by Process:</label>
+                <div class="multiselect-dropdown">
+                    <div class="multiselect-select-box" id="processSelectBox">Select Processes</div>
+                    <div class="multiselect-checkboxes" id="processCheckboxes">
+                        <input type="text" id="processSearchInput" placeholder="Search processes...">
+                        <div id="processCheckboxesList"></div> </div>
+                </div>
+            </div>
+            <div class="filter-group">
+                <label for="customerFilterSelect">Filter by Customer:</label>
+                <div class="multiselect-dropdown">
+                    <div class="multiselect-select-box" id="customerSelectBox">Select Customers</div>
+                    <div class="multiselect-checkboxes" id="customerCheckboxes">
+                        </div>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <label for="formTypeFilter">Filter by Form Type:</label>
+                <select id="formTypeFilter">
+                    <option value="">All Types</option>
+                    <option value="Trainee">Trainee Feedback</option>
+                    <option value="Trainer">Trainer Form</option>
+                </select>
+            </div>
+        </div>
+
+        <p id="formsLoadingMessage" style="text-align: center; display: none;">Loading form submissions...</p>
+        <table id="formSubmissionsTable" style="display: none;">
+            <thead>
+                <tr id="formSubmissionsTableHeader">
+                    </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get references to main navigation buttons
+            const formsParentBtn = document.getElementById('formsParentBtn');
+            const loginActivityBtn = document.getElementById('loginActivityBtn');
+
+            // Get references to content sections and their elements for Login Activity
+            const loginActivityContent = document.getElementById('loginActivityContent');
+            const loginActivityTableBody = document.querySelector('#loginActivityTable tbody');
+            const loginActivityTable = document.getElementById('loginActivityTable');
+            const loginLoadingMessage = document.getElementById('loginLoadingMessage');
+
+            // Get references to content sections and their elements for Form Submissions
+            const formSubmissionsContent = document.getElementById('formSubmissionsContent');
+            const formSubmissionsTitle = document.getElementById('formSubmissionsTitle');
+            const formSubmissionsTableBody = document.querySelector('#formSubmissionsTable tbody');
+            const formSubmissionsTable = document.getElementById('formSubmissionsTable');
+            const formSubmissionsTableHeader = document.getElementById('formSubmissionsTableHeader');
+            const formsLoadingMessage = document.getElementById('formsLoadingMessage');
+
+            // Get references to filter input fields and select dropdowns
+            const employeeIdSearchInput = document.getElementById('employeeIdSearch');
+            const shiftFilterSelect = document.getElementById('shiftFilter');
+            const formTypeFilterSelect = document.getElementById('formTypeFilter');
+
+            // Get references to Customer Filter elements
+            const customerSelectBox = document.getElementById('customerSelectBox');
+            const customerCheckboxesContainer = document.getElementById('customerCheckboxes');
+
+            // Get references to Zone and Process Filter elements
+            const zoneSelectBox = document.getElementById('zoneSelectBox');
+            const zoneCheckboxesContainer = document.getElementById('zoneCheckboxes');
+            const processSelectBox = document.getElementById('processSelectBox');
+            const processCheckboxesContainer = document.getElementById('processCheckboxes');
+            const processSearchInput = document.getElementById('processSearchInput'); 
+            const processCheckboxesList = document.getElementById('processCheckboxesList'); // NEW: Separate div for checkboxes
+
+            // This array will hold all form data fetched from the API
+            let allFetchedFormsData = []; 
+            
+            // Full mapping from Trainer_Form for reference (not directly used for filtering here)
+            const fullZoneProcessMapping = { 
+                'Zone 1': ['AGC Liftgate Glass SMP-013', 'AGC Quarter Glass SMP-012', 'AGC Windshield SMP-011', 'Autoliv Repack & Putaway SMP-029', 'Autoliv Sequence SMP-028', 'BOS Cargo SMP-017', 'BOS Rollo Blind SMP-018', 'Dock Specialist', 'FISCHER Tambour Door SMP-015', 'IFA SMP-001', 'Magna Assembly SMP-104', 'Magna Inspection SMP-071', 'Magna Picking SMP-053', 'Magna Scanning SMP-70', 'Magna SMP-045', 'Magna Tester SMP-069', 'Material Handler', 'Valeo DBE SMP-008', 'Welder - SMP-001', 'Helium - SMP-002', 'Headshield - SMP-004', 'POAI Inspection - FT - 005', 'Steel Assembly - SMP-006', 'POAI Picking - FT - 007', 'Service Parts - SMP-008', 'Double Bead Training'],
+                'Zone 2': ['Draxelmaier Gloebox SMP-42', 'Draxelmaier IP Lowers SMP-40', 'Grammer Console SMP-043', 'Grammer Grab Handle SMP-044', 'FORKLIFT', 'MAHLE HVAC SMP-014', 'Matlkon SMP-015', 'Fehrer Console SMP-020', 'Fehrer Armrest SMP-021', 'POAI Helium - FT - 003', 'POAI Headshield - FT - 004', 'POAI Sequence - FT - 006', 'POAI Steel Assembly - FT-007', 'POAI Leader/Picker - FT -008', 'POAI Service Parts - FT-010', 'POAI Manual Sequencing - FT-011', 'POAI Double Bead Training'],
+                'Zone 3': ['Autoneum Mid Carpet SMP-023', 'Autoneum LH/RH Carpet SMP-024', 'Autoneum Picking SMP-064', 'Fujikura Picking/Sequencing SMP-063', 'Fujikura Harness Putaway SMP-065', 'Fujikura Receiving SMP-065', 'Fujikura Retrauable repack SMP-062', 'Fujikura Scanning to Stock SMP-063', 'Fujikura Unpack SMP-064', 'Grammer Armrest SMP-050', 'Grammer Center Console SMP-051', 'Grammer Console Dock Socket SMP-052', 'Kasai Upper Armrest SMP-054', 'Kasai Lower Liftgate SMP-055', 'Material Handler', 'POAI Sweden - FT-001', 'POAI Welder - FT-002', 'POAI Helium - FT-003', 'POAI Headshield - FT-004', 'POAI Sequence - FT-006', 'Grammer Center Console Dock Socket SMP-052', 'Grammer Dock Socket SMP-053', 'Fujikura Scanning to Stock SMP-063', 'Fujikura Harness Rework SMP-061', 'Fujikura Receiving SMP-065', 'Fujikura Retrauable repack SMP-062', 'Fehrer Console SMP-020', 'Fehrer Armrest SMP-021', 'Fujikura Harness Putaway SMP-065', 'Mahle Harness Putaway - SMP-0--'],
+                'RANs/CKD': ['Battery Picking SMP-006', 'Battery Testing SMP-005', 'Dock Specialist', 'Material Handler', 'Parcel Staff SMP-009', 'RANS Picking/Labeling/Shipping FT-009', 'Sequencing GMA-016', 'Swagego - SMP-001', 'Helium - SMP-002', 'Headshield - SMP-004', 'POAI Inspection - FT - 005', 'Steel Assembly - SMP-006', 'POAI Picking - FT - 007', 'Service Parts - SMP-008', 'Double Bead Training']
+            };
+
+            // Extract and sort all unique zones from the full mapping
+            const allZones = Object.keys(fullZoneProcessMapping).sort();
+            // Extract and sort all unique processes from the full mapping
+            const allProcesses = Array.from(new Set(Object.values(fullZoneProcessMapping).flat())).sort().filter(p => p !== ''); // Filter out empty strings if any
+
+            // Sorted list of customer names
+            const customerNames = ["AGC","AUTONEUM","Autoliv","BOS","DRX","ELANDERS","FISCHER","FUJIKURA","IFA","MAGNA","VALEO","GRM","MAHLE","KASAI","POAI"].sort();
+
+            // Function to dynamically create and add customer checkboxes
+            function populateCustomerCheckboxes() {
+                customerCheckboxesContainer.innerHTML = ''; 
+                customerNames.forEach(customer => { 
+                    const label = document.createElement('label'); 
+                    label.innerHTML = `<input type="checkbox" value="${customer}"> ${customer}`; 
+                    customerCheckboxesContainer.appendChild(label); 
+                });
+            }
+            populateCustomerCheckboxes(); 
+
+            // Function to dynamically create and add Zone checkboxes
+            function populateZoneCheckboxes() {
+                zoneCheckboxesContainer.innerHTML = ''; 
+                allZones.forEach(zone => { 
+                    const label = document.createElement('label'); 
+                    label.innerHTML = `<input type="checkbox" value="${zone}"> ${zone}`; 
+                    zoneCheckboxesContainer.appendChild(label); 
+                });
+            }
+            populateZoneCheckboxes(); 
+
+            // Function to dynamically create and add Process checkboxes based on processesToDisplay
+            function populateProcessCheckboxes(processesToDisplay) {
+                // Clear only the content within the processCheckboxesList div
+                processCheckboxesList.innerHTML = ''; 
+                
+                // Store currently checked processes before repopulating
+                const currentlyCheckedProcesses = Array.from(processCheckboxesList.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+
+                processesToDisplay.forEach(process => { 
+                    if (process) { // Ensure process name is not empty
+                        const label = document.createElement('label');
+                        label.innerHTML = `<input type="checkbox" value="${process}"> ${process}`;
+                        processCheckboxesList.appendChild(label); // Append to the new sub-div
+                    }
+                });
+
+                // Re-check processes that were previously checked and are still in the new list
+                processCheckboxesList.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                    if (currentlyCheckedProcesses.includes(cb.value)) {
+                        cb.checked = true;
+                    }
+                });
+
+                applyProcessSearchFilter(); // Apply the search filter to the newly populated list
+            }
+
+            // Function to show/hide a specific multiselect dropdown
+            function toggleMultiselectDropdown(selectBoxId, checkboxesContainerId) {
+                const checkboxes = document.getElementById(checkboxesContainerId);
+                if (checkboxes) { // Added null check
+                    checkboxes.style.display = checkboxes.style.display === 'block' ? 'none' : 'block';
+                    // If opening the process dropdown, ensure processes are filtered first
+                    if (checkboxesContainerId === 'processCheckboxes' && checkboxes.style.display === 'block') {
+                        determineAndPopulateProcesses(); // Recalculate and populate processes
+                        if (processSearchInput) { // Added null check
+                            processSearchInput.focus(); // Focus the search input when opened
+                        }
+                    }
+                }
+            }
+
+            // Centralized event listener for clicks outside multiselects
+            document.body.addEventListener('click', function(event) {
+                if (!event.target.closest('.multiselect-dropdown')) { 
+                    // Added null checks before accessing style.display
+                    if (customerCheckboxesContainer) customerCheckboxesContainer.style.display = 'none'; 
+                    if (zoneCheckboxesContainer) zoneCheckboxesContainer.style.display = 'none'; 
+                    if (processCheckboxesContainer) processCheckboxesContainer.style.display = 'none'; 
+                }
+            });
+
+            // Stop click events from bubbling up when clicking inside checkbox containers
+            // Added null checks to these event listeners
+            if (customerCheckboxesContainer) { // Added null check
+                customerCheckboxesContainer.addEventListener('click', (e) => e.stopPropagation());
+            }
+            if (zoneCheckboxesContainer) { // Added null check
+                zoneCheckboxesContainer.addEventListener('click', (e) => e.stopPropagation());
+            }
+            if (processCheckboxesContainer) { // Added null check
+                processCheckboxesContainer.addEventListener('click', (e) => e.stopPropagation());
+            }
+
+
+            // Function to update the text displayed in the multiselect box and trigger filtering
+            function updateMultiselectTextAndFilter(selectBoxId, checkboxesContainerId) {
+                const container = document.getElementById(checkboxesContainerId); // Get container dynamically
+                if (!container) return; // Exit if container doesn't exist
+
+                const selectedItems = Array.from(container.querySelectorAll('input[type="checkbox"]:checked')) 
+                                             .map(cb => cb.value); 
+                const selectBox = document.getElementById(selectBoxId);
+                if (selectBox) { // Added null check
+                    selectBox.textContent = selectedItems.length > 0 ? selectedItems.join(', ') : 'Select ' + selectBoxId.replace('SelectBox', '');
+                }
+                
+                // If Zone selection changes (Customer is ignored for Process list), re-populate Process checkboxes
+                if (checkboxesContainerId === 'zoneCheckboxes') {
+                    determineAndPopulateProcesses(); // Call the new function to filter processes
+                }
+                applyFilters(); // Apply main table filters whenever a selection changes
+            }
+
+            // Add event listeners for customer multiselect dropdown
+            if (customerSelectBox) { // Added null check
+                customerSelectBox.addEventListener('click', () => toggleMultiselectDropdown('customerSelectBox', 'customerCheckboxes'));
+            }
+            if (customerCheckboxesContainer) { // Added null check
+                customerCheckboxesContainer.addEventListener('change', (event) => {
+                    if (event.target.type === 'checkbox') { 
+                        updateMultiselectTextAndFilter('customerSelectBox', 'customerCheckboxes');
+                    }
+                });
+            }
+
+            // Add event listeners for zone multiselect dropdown
+            if (zoneSelectBox) { // Added null check
+                zoneSelectBox.addEventListener('click', () => toggleMultiselectDropdown('zoneSelectBox', 'zoneCheckboxes'));
+            }
+            if (zoneCheckboxesContainer) { // Added null check
+                zoneCheckboxesContainer.addEventListener('change', (event) => {
+                    if (event.target.type === 'checkbox') { 
+                        updateMultiselectTextAndFilter('zoneSelectBox', 'zoneCheckboxes');
+                    }
+                });
+            }
+
+            // Add event listeners for process multiselect dropdown (for opening/closing)
+            if (processSelectBox) { // Added null check
+                processSelectBox.addEventListener('click', () => toggleMultiselectDropdown('processSelectBox', 'processCheckboxes'));
+            }
+            if (processCheckboxesList) { // Added null check
+                processCheckboxesList.addEventListener('change', (event) => { 
+                    if (event.target.type === 'checkbox') { 
+                        updateMultiselectTextAndFilter('processSelectBox', 'processCheckboxes');
+                    }
+                });
+            }
+
+            // NEW: Event listener for the process search input
+            if (processSearchInput) { // Added null check
+                processSearchInput.addEventListener('input', applyProcessSearchFilter);
+            }
+
+            // NEW FUNCTION: Filters displayed process checkboxes based on search input
+            function applyProcessSearchFilter() {
+                const searchTerm = processSearchInput.value.toLowerCase().trim();
+                const allProcessLabels = processCheckboxesList.querySelectorAll('label'); 
+                
+                allProcessLabels.forEach(label => {
+                    const processText = label.textContent.toLowerCase();
+                    if (searchTerm === '' || processText.includes(searchTerm)) {
+                        label.style.display = 'flex'; 
+                    } else {
+                        label.style.display = 'none';
+                    }
+                });
+            }
+
+            // Define the headers for the combined table display
+            const commonCombinedHeaders = [ 
+                'Type', 'Logged In User', 'Employee ID', 'Login Time', 'Submission Time', 
+                'Shift', 'Zone', 'Customer', 'Process', 'Form Link' 
+            ];
+
+
+            // Function to hide all main content sections (forms, login activity, etc.)
+            function hideAllContentSections() {
+                if (loginActivityContent) loginActivityContent.classList.remove('active'); 
+                if (formSubmissionsContent) formSubmissionsContent.classList.remove('active'); 
+                
+                if (customerCheckboxesContainer) customerCheckboxesContainer.style.display = 'none'; 
+                if (zoneCheckboxesContainer) zoneCheckboxesContainer.style.display = 'none'; 
+                if (processCheckboxesContainer) processCheckboxesContainer.style.display = 'none'; 
+            }
+
+            // UPDATED FUNCTION: Determine and populate processes based on selected zones ONLY (NO CUSTOMER RELATION)
+            function determineAndPopulateProcesses() {
+                const selectedZones = Array.from(zoneCheckboxesContainer.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value); 
+                
+                let relevantProcesses = new Set(); // Use a Set to store unique processes
+
+                if (selectedZones.length === 0) { 
+                    relevantProcesses = new Set(allProcesses); 
+                } else {
+                    selectedZones.forEach(zone => {
+                        if (fullZoneProcessMapping[zone]) {
+                            fullZoneProcessMapping[zone].forEach(process => {
+                                if (process) { 
+                                    relevantProcesses.add(process);
+                                }
+                            });
+                        }
+                    });
+                }
+                
+                populateProcessCheckboxes(Array.from(relevantProcesses).sort()); 
+            }
+
+
+            // Function to apply all active filters and re-render the forms table
+            function applyFilters() {
+                const employeeIdSearchTerm = employeeIdSearchInput.value.toLowerCase(); 
+                const selectedShift = shiftFilterSelect.value; 
+                const selectedFormType = formTypeFilterSelect.value; 
+                const selectedCustomers = Array.from(customerCheckboxesContainer.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value); 
+                const selectedZones = Array.from(zoneCheckboxesContainer.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value); 
+                // Line 147 (original reference)
+                const selectedProcesses = Array.from(processCheckboxesList.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+
+
+                let filteredData = allFetchedFormsData.filter(submission => { 
+                    if (submission.type === 'Trainee') { 
+                        const matchesEmployeeId = employeeIdSearchTerm === '' ||  
+                                                  (submission.logged_in_username && submission.logged_in_username.toLowerCase().includes(employeeIdSearchTerm)); 
+                        const matchesFormType = selectedFormType === '' || (submission.type && submission.type === selectedFormType); 
+                        
+                        const passesTrainerSpecificFilters = (selectedShift === '' || (submission.details && (submission.details['Shift'] === undefined || submission.details['Shift'] === 'N/A'))) && 
+                                                           (selectedCustomers.length === 0 || (submission.details && (submission.details['Customer Name'] === undefined || submission.details['Customer Name'] === 'N/A'))) && 
+                                                           (selectedZones.length === 0 || (submission.details && (submission.details['Zone'] === undefined || submission.details['Zone'] === 'N/A'))) && 
+                                                           (selectedProcesses.length === 0 || (submission.details && (submission.details['Process Name'] === undefined || submission.details['Process Name'] === 'N/A'))); 
+                        
+                        return matchesEmployeeId && matchesFormType && passesTrainerSpecificFilters; 
+                    }
+
+                    const matchesEmployeeId = employeeIdSearchTerm === '' || ( 
+                        (submission.employee_id && String(submission.employee_id).toLowerCase().includes(employeeIdSearchTerm)) || 
+                        (submission.logged_in_username && submission.logged_in_username.toLowerCase().includes(employeeIdSearchTerm)) 
+                    ); 
+
+                    const matchesShift = selectedShift === '' || (submission.details['Shift'] && submission.details['Shift'] === selectedShift); 
+                    
+                    const matchesCustomer = selectedCustomers.length === 0 || (submission.details['Customer Name'] && selectedCustomers.includes(submission.details['Customer Name'])); 
+
+                    const matchesZone = selectedZones.length === 0 || (submission.details['Zone'] && selectedZones.includes(submission.details['Zone'])); 
+
+                    const matchesProcess = selectedProcesses.length === 0 || (submission.details['Process Name'] && selectedProcesses.includes(submission.details['Process Name'])); 
+
+                    const matchesFormType = selectedFormType === '' || (submission.type && submission.type === selectedFormType); 
+
+                    return matchesEmployeeId && matchesShift && matchesCustomer && matchesZone && matchesProcess && matchesFormType; 
+                });
+
+                renderFormsTable(filteredData); 
+            }
+
+            // Function to render the forms table with the provided data
+            function renderFormsTable(data) {
+                if (!formSubmissionsTableBody) { // Added robustness check
+                    console.error("Error: formSubmissionsTableBody not found for rendering.");
+                    return;
+                }
+                formSubmissionsTableBody.innerHTML = ''; 
+
+                if (data.length > 0) { 
+                    data.forEach(submission => { 
+                        const row = formSubmissionsTableBody.insertRow(); 
+                        
+                        row.insertCell(0).textContent = submission.type; 
+                        row.insertCell(1).textContent = submission.logged_in_username; 
+                        row.insertCell(2).textContent = submission.employee_id || 'N/A'; 
+                        row.insertCell(3).textContent = submission.login_time; 
+                        row.insertCell(4).textContent = submission.submission_time; 
+
+                        row.insertCell(5).textContent = (submission.details && submission.details['Shift']) ? submission.details['Shift'] : 'N/A'; 
+                        row.insertCell(6).textContent = (submission.details && submission.details['Zone']) ? submission.details['Zone'] : 'N/A'; 
+                        row.insertCell(7).textContent = (submission.details && submission.details['Customer Name']) ? submission.details['Customer Name'] : 'N/A'; 
+                        row.insertCell(8).textContent = (submission.details && submission.details['Process Name']) ? submission.details['Process Name'] : 'N/A'; 
+
+                        const linkCell = row.insertCell(9); 
+                        const link = document.createElement('a'); 
+                        link.href = `/view_submission/${submission.uuid}`; 
+                        link.textContent = 'View'; 
+                        linkCell.appendChild(link); 
+                    });
+                } else {
+                    const row = formSubmissionsTableBody.insertRow(); 
+                    const cell = row.insertCell(0); 
+                    cell.colSpan = commonCombinedHeaders.length; 
+                    cell.textContent = `No form submissions found matching criteria.`; 
+                    cell.style.textAlign = 'center'; 
+                }
+            }
+
+
+            // Function to fetch and display ALL form submissions
+            async function fetchAndDisplayAllForms() {
+                hideAllContentSections(); 
+                if (formSubmissionsContent) formSubmissionsContent.classList.add('active'); 
+
+                if (formsLoadingMessage) formsLoadingMessage.style.display = 'block'; 
+                if (formSubmissionsTable) formSubmissionsTable.style.display = 'none'; 
+                if (formSubmissionsTableBody) formSubmissionsTableBody.innerHTML = ''; 
+
+                if (formSubmissionsTableHeader) { // Added null check
+                    formSubmissionsTableHeader.innerHTML = ''; 
+                    commonCombinedHeaders.forEach(headerText => { 
+                        const th = document.createElement('th'); 
+                        th.textContent = headerText; 
+                        formSubmissionsTableHeader.appendChild(th); 
+                    });
+                }
+
+                // Reset all filter values when fetching all forms
+                if (employeeIdSearchInput) employeeIdSearchInput.value = ''; 
+                if (shiftFilterSelect) shiftFilterSelect.value = ''; 
+                if (formTypeFilterSelect) formTypeFilterSelect.value = ''; 
+                if (customerCheckboxesContainer) {
+                    customerCheckboxesContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false); 
+                    customerSelectBox.textContent = 'Select Customers'; 
+                }
+                if (zoneCheckboxesContainer) {
+                    zoneCheckboxesContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false); 
+                    zoneSelectBox.textContent = 'Select Zones'; 
+                }
+                
+                // Clear and reset process filter state
+                if (processSearchInput) processSearchInput.value = ''; 
+                if (processSelectBox) processSelectBox.textContent = 'Select Processes'; 
+
+
+                try {
+                    const response = await fetch('/api/form_submissions'); 
+                    if (!response.ok) throw new Error('Network response was not ok');  
+                    const data = await response.json(); 
+
+                    allFetchedFormsData = data; 
+                    
+                    determineAndPopulateProcesses(); 
+
+                    if (formsLoadingMessage) formsLoadingMessage.style.display = 'none'; 
+                    if (formSubmissionsTable) formSubmissionsTable.style.display = 'table'; 
+
+                    applyFilters(); 
+                } catch (error) {
+                    if (formsLoadingMessage) formsLoadingMessage.style.display = 'none'; 
+                    console.error('Error fetching all form submissions:', error); 
+                    
+                    // Safely insert error message
+                    if (formSubmissionsTableBody) {
+                        // Clear existing content to prevent multiple error messages on retries
+                        formSubmissionsTableBody.innerHTML = '';
+                        const errorRow = formSubmissionsTableBody.insertRow();
+                        const errorCell = errorRow.insertCell(0);
+                        errorCell.colSpan = commonCombinedHeaders.length; 
+                        errorCell.textContent = `Error loading forms: ${error.message}. Please ensure the Flask server is running and accessible.`; 
+                        errorCell.style.textAlign = 'center'; 
+                        errorCell.style.color = 'red';
+                    } else if (formSubmissionsContent) {
+                        formSubmissionsContent.innerHTML = `<p style="color:red; text-align:center;">Error initializing forms: ${error.message}. Check console for details.</p>`;
+                    }
+                    if (formSubmissionsTable) formSubmissionsTable.style.display = 'table'; 
+                }
+            }
+
+
+            // --- Event Listeners for Filter Controls ---
+            if (employeeIdSearchInput) employeeIdSearchInput.addEventListener('input', applyFilters); 
+            if (shiftFilterSelect) shiftFilterSelect.addEventListener('change', applyFilters); 
+            if (formTypeFilterSelect) formTypeFilterSelect.addEventListener('change', applyFilters); 
+
+
+            // --- Event Listener for "Forms" Button (main navigation) ---
+            if (formsParentBtn) { // Added null check
+                formsParentBtn.addEventListener('click', function() { 
+                    fetchAndDisplayAllForms(); 
+                });
+            }
+
+            // --- Event Listener for "Login Activity" Button ---
+            if (loginActivityBtn) { // Added null check
+                loginActivityBtn.addEventListener('click', function() { 
+                    hideAllContentSections(); 
+                    if (loginActivityContent) loginActivityContent.classList.add('active'); 
+
+                    if (loginLoadingMessage) loginLoadingMessage.style.display = 'block'; 
+                    if (loginActivityTable) loginActivityTable.style.display = 'none'; 
+                    if (loginActivityTableBody) loginActivityTableBody.innerHTML = ''; 
+
+                    fetch('/api/login_activity') 
+                        .then(response => { 
+                            if (!response.ok) throw new Error('Network response was not ok'); 
+                            return response.json(); 
+                        })
+                        .then(data => { 
+                            if (loginLoadingMessage) loginLoadingMessage.style.display = 'none'; 
+                            if (loginActivityTable) loginActivityTable.style.display = 'table'; 
+                            if (loginActivityTableBody) { // Added null check
+                                if (data.length > 0) { 
+                                    data.forEach(log => { 
+                                        const row = loginActivityTableBody.insertRow(); 
+                                        row.insertCell(0).textContent = log.id; 
+                                        row.insertCell(1).textContent = log.username; 
+                                        row.insertCell(2).textContent = log.login_time; 
+                                    });
+                                } else {
+                                    const row = loginActivityTableBody.insertRow(); 
+                                    const cell = row.insertCell(0); 
+                                    cell.colSpan = 3; 
+                                    cell.textContent = 'No login activity found.'; 
+                                    cell.style.textAlign = 'center'; 
+                                }
+                            }
+                        })
+                        .catch(error => { 
+                            if (loginLoadingMessage) loginLoadingMessage.style.display = 'none'; 
+                            console.error('Error fetching login activity:', error); 
+                            
+                            // Safely insert error message
+                            if (loginActivityTableBody) { // Added null check
+                                loginActivityTableBody.innerHTML = ''; // Clear existing content
+                                const errorRow = loginActivityTableBody.insertRow();
+                                const errorCell = errorRow.insertCell(0);
+                                errorCell.colSpan = 3; 
+                                errorCell.textContent = `Error loading activity: ${error.message}. Please ensure the Flask server is running and accessible.`; 
+                                errorCell.style.textAlign = 'center'; 
+                                errorCell.style.color = 'red';
+                            } else if (loginActivityContent) {
+                                loginActivityContent.innerHTML = `<p style="color:red; text-align:center;">Error initializing login activity: ${error.message}. Check console for details.</p>`;
+                            }
+                            if (loginActivityTable) loginActivityTable.style.display = 'table'; 
+                        });
+                });
+            }
+        });
+    </script>
+</body>
+</html>
