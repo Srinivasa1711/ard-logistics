@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Training Log Form</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* Set basic font and background for the whole page */
+     body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0f963e;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    /* Styles for the logo container */
+    .logo-container {
+        width: 100%;
+        text-align: center; 
+        margin-bottom: 20px; 
+    }
+
+    /* Styles for the logo image */
+    .logo-container img {
+        max-width: 120px; 
+        max-height: 80px;
+        height: auto; 
+        display: block; 
+        margin-left: auto; 
+        margin-right: auto; 
+        border-radius: 15px;
+         filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8))
+    }
+     .logo-container img:hover {
+        transform: scale(1.03);
+    }
+    /* Box that shows success or error message */
+    /* This styles the message box that appears at the top (for success or error messages). */
+    #message-box {
+      display: none; 
+      position: fixed; 
+      top: 20px; 
+      left: 50%; 
+      transform: translateX(-50%); 
+      background-color: #4CAF50; 
+      color: white; 
+      padding: 15px 20px; 
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
+      z-index: 1000; 
+      text-align: center; 
+      font-weight: 500; 
+      opacity: 0; 
+      transition: opacity 0.5s ease-in-out; 
+      max-width: 90%; 
+    }
+
+    /* Shows the message box */
+    /* This makes the message box visible and fully opaque. */
+    #message-box.show {
+      opacity: 1; 
+      display: block; 
+    }
+
+    /* Outer white box with form inside */
+    /* This styles the main white box that holds the entire form. */
+    .form-container {
+      background-color: white; 
+      padding: 32px; 
+      border-radius: 16px; 
+      box-shadow: 0 30px 50px rgba(0, 0, 0, 0.1); 
+      width: 100%; 
+      max-width: 700px; 
+      border: 1px solid #e5e7eb; 
+    }
+
+    /* Form title */
+    /* Styles the main title of the form, "Process Training Log". */
+    .form-title {
+      /* font-size: 1.875rem; 
+      font-weight: 800; 
+      color: #1f2937;
+      margin-bottom: 2rem; 
+      text-align: center; 
+      text-shadow: 1px 14px 28px rgba(0, 0, 0, 0.1);
+      font-style: calc(); */
+
+      background-image: linear-gradient(to right, #0f963e); 
+      color: white;
+      padding: 10px 20px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      font-size: 1.575rem;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      z-index: 15; 
+      margin-bottom: 1.5rem;
+      border-radius: 15px;
+      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8))
+    }
+     .form-title:hover {
+        transform: scale(1.03);
+    }
+      
+    
+
+    /* Section title */
+    /* Styles the titles of each section within the form (e.g., "Employee Information"). */
+    .section-title {
+      font-size: 1.25rem; 
+      font-weight: 600; 
+      color: #1f2937; 
+      margin-bottom: 1rem; 
+    }
+
+    /* Section border and padding */
+    /* Adds a line at the bottom of each form section and space below it. */
+    .form-section {
+      border-bottom: 1px solid #e5e7eb; 
+      padding-bottom: 1.5rem; 
+    }
+
+    /* Label for input fields */
+    /* Styles the text labels above each input field (e.g., "Name", "Employee ID"). */
+    .form-label {
+      display: block; 
+      font-size: 0.875rem; 
+      font-weight: 500; 
+      color: #374151; 
+      margin-bottom: 0.25rem; 
+    }
+
+    /* Input fields */
+    /* Styles all text input boxes and date/time inputs. */
+    .form-input {
+      display: block; 
+      width: 100%; 
+      padding: 0.5rem 1rem; 
+      border: 1px solid #d1d5db; 
+      border-radius: 0.5rem;
+      font-size: 0.875rem; 
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      transition: border 0.2s, box-shadow 0.2s; 
+    }
+
+    /* Style when input is clicked/focused */
+    /* Changes the border color when an input field is clicked on. */
+    .form-input:focus {
+      border-color: #6366f1; 
+      outline: none; 
+    }
+
+    /* Reuse form-input style for dropdown */
+    /* Makes the dropdown (select) look like other input fields. */
+    select.form-input {
+      appearance: none; 
+      background-color: white; 
+    }
+
+    /* Grid layout for form */
+    /* Sets up a grid system for arranging form fields. */
+    .form-grid {
+      display: grid; 
+      gap: 1.5rem; 
+    }
+
+    /* 2-column layout for larger screens */
+    /* On wider screens (768px and up), it arranges fields into two columns. */
+    @media (min-width: 768px) {
+      .form-grid-2 {
+        grid-template-columns: repeat(2, 1fr); 
+      }
+    }
+
+    /* Submit button style */
+    /* Styles the "Submit Training Log" button. */
+    .submit-btn {
+      width: 100%; 
+      padding: 0.75rem 1rem; 
+      font-size: 1.125rem; 
+      font-weight: 600; 
+      color: white; 
+      background-color: #4f46e5; 
+      border: none; /* No border */
+      border-radius: 0.5rem; 
+      cursor: pointer; 
+      transition: background-color 0.2s; 
+      margin-top: 1.5rem; 
+      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8))
+    }
+
+    /* Change button color on hover */
+    /* Darkens the button color when you move your mouse over it. */
+    .submit-btn:hover {
+      background-color: #4338ca; 
+        transform: scale(1.05);
+    }
+    
+
+    /* Style for placeholder text in select dropdown */
+    /* Styles the "Select a shift" placeholder text in the dropdown. */
+    .select{
+        color: gray;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="message-box"></div>
+
+  <div class="form-container">
+    <div class="logo-container">
+      <img src="{{ url_for('static', filename='ARD_Logo.jpg') }}" alt="ARD Logo">
+    </div>
+    <h1 class="form-title">Process Training Log</h1>
+
+    <form id="trainingForm">
+
+      <div class="form-section">
+        <h2 class="section-title">Trainer Information</h2>
+        <div class="form-grid form-grid-2">
+          <div>
+            <label for="trainerName" class="form-label">Trainer Name</label>
+            <input type="text" id="trainerName" name="trainerName" class="form-input" placeholder="Enter trainer's full name" required autocomplete="off"/>
+          </div>
+          <div>
+            <label for="trainerEmployeeId" class="form-label">Trainer Employee ID</label>
+            <input type="text" id="trainerEmployeeId" name="trainerEmployeeId" class="form-input" placeholder="Enter trainer's employee ID" required autocomplete="off"/>
+          </div>
+          <div>
+            <label for="shift" class="form-label">Shift</label>
+            <select id="shift" name="shift" class="form-input" required autocomplete="off">
+              <option value="" class="select">Select a shift</option>
+              <option value="Shift 1">Shift 1</option>
+              <option value="Shift 2">Shift 2</option>
+            </select>
+          </div>
+          <div>
+            <label for="customerName" class="form-label">Customer</label>
+            <input type="text" id="customerName" name="customerName" class="form-input" placeholder="Enter customer's name" required autocomplete="off"/>
+          </div>
+          <!-- NEW: Zone Dropdown -->
+          <div>
+            <label for="zone" class="form-label">Zone</label>
+            <select id="zone" name="zone" class="form-input" required autocomplete="off">
+              <option value="" class="select">Select a zone</option>
+              <option value="Zone 1">Zone 1</option>
+              <option value="Zone 2">Zone 2</option>
+              <option value="Zone 3">Zone 3</option>
+              <option value="RANs/CKD">RANs/CKD</option>
+            </select>
+          </div>
+          <!-- MODIFIED: Process is now a dropdown, dependent on Zone -->
+          <div>
+            <label for="processName" class="form-label">Process</label>
+            <select id="processName" name="processName" class="form-input" required autocomplete="off" disabled>
+              <option value="" class="select">Select a process</option>
+            </select>
+          </div>
+          <div>
+            <label for="giveFeedback" class="form-label">Do you want to give feedback about trainee?</label>
+            <select id="giveFeedback" name="giveFeedback" class="form-input" required autocomplete="off">
+              <option value="">Select an option</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h2 class="section-title">Trainee Details</h2>
+        <div class="form-grid form-grid-2">
+          <div>
+            <label for="traineeName" class="form-label">Trainee Name</label>
+            <input type="text" id="traineeName" name="traineeName" class="form-input" placeholder="Enter trainee's full name" required autocomplete="off"/>
+          </div>
+          <div>
+            <label for="traineeEmployeeId" class="form-label">Trainee Employee ID</label>
+            <input type="text" id="traineeEmployeeId" name="traineeEmployeeId" class="form-input" placeholder="Enter trainee's employee ID" required autocomplete="off"/>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h2 class="section-title">Training Duration</h2>
+        <div class="form-grid form-grid-2">
+          <div>
+            <label for="startTime" class="form-label">Start Date</label>
+            <input type="date" id="startTime" name="startTime" class="form-input" required autocomplete="off"/>
+          </div>
+          <div>
+            <label for="endTime" class="form-label">End Date</label>
+            <input type="date" id="endTime" name="endTime" class="form-input" required autocomplete="off"/>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn" id="submitButton">Next</button>
+    </form>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const trainingForm = document.getElementById('trainingForm');
+      const messageBox = document.getElementById('message-box');
+      const giveFeedbackSelect = document.getElementById('giveFeedback');
+      const submitButton = document.getElementById('submitButton');
+      const zoneSelect = document.getElementById('zone'); // NEW
+      const processNameSelect = document.getElementById('processName'); // MODIFIED
+
+      // Define the mapping of zones to processes
+     const zoneProcessMapping = {
+          'Zone 1': ['AGC Liftgate Glass SMP-013', 'AGC Quarter Glass SMP-012', 'AGC Windshield SMP-011', 'Autoliv Repack & Putaway SMP-029', 'Autoliv Sequence SMP-028', 'BOS Cargo SMP-017', 'BOS Rollo Blind SMP-018', 'Dock Specialist', 'FISCHER Tambour Door SMP-015', 'IFA SMP-001', 'Magna Assembly SMP-104', 'Magna Inspection SMP-071', 'Magna Picking SMP-053', 'Magna Scanning SMP-70', 'Magna SMP-045', 'Magna Tester SMP-069', 'Material Handler', 'Valeo DBE SMP-008', 'Autoliv Repack & Putaway SMP-029', 'Autoliv Sequence SMP-028', 'BOS Cargo SMP-017', 'BOS Rollo Blind SMP-018', 'Dock Specialist', 'FISCHER Tambour Door SMP-015', 'IFA SMP-001', 'Magna Assembly SMP-104', 'Magna Inspection SMP-071', 'Magna Picking SMP-053', 'Magna Scanning SMP-70', 'Magna SMP-045', 'Magna Tester SMP-069', 'Material Handler', 'Valeo DBE SMP-008', 'Welder - SMP-001', 'Helium - SMP-002', 'Headshield - SMP-004', 'POAI Inspection - FT - 005', 'Steel Assembly - SMP-006', 'POAI Picking - FT - 007', 'Service Parts - SMP-008', 'Double Bead Training'],
+          'Zone 2': ['Draxelmaier Gloebox SMP-42', 'Draxelmaier IP Lowers SMP-40', 'Grammer Console SMP-043', 'Grammer Grab Handle SMP-044', 'FORKLIFT', 'Draxelmaier IP Lowers SMP-40', 'Draxelmaier Gloebox SMP-42', 'MAHLE HVAC SMP-014', 'Matlkon SMP-015', 'Autoliv Repack & Putaway SMP-029', 'Autoliv Sequence SMP-028', 'BOS Cargo SMP-017', 'BOS Rollo Blind SMP-018', 'Dock Specialist', 'FISCHER Tambour Door SMP-015', 'IFA SMP-001', 'Magna Assembly SMP-104', 'Magna Inspection SMP-071', 'Magna Picking SMP-053', 'Magna Scanning SMP-70', 'Magna SMP-045', 'Magna Tester SMP-069', 'Material Handler', 'Valeo DBE SMP-008', 'Fehrer Console SMP-020', 'Fehrer Armrest SMP-021', 'POAI Helium - FT - 003', 'POAI Headshield - FT - 004', 'POAI Sequence - FT - 006', 'POAI Steel Assembly - FT-007', 'POAI Leader/Picker - FT -008', 'POAI Service Parts - FT-010', 'POAI Manual Sequencing - FT-011', 'POAI Double Bead Training'],
+          'Zone 3': ['Autoneum Mid Carpet SMP-023', 'Autoneum LH/RH Carpet SMP-024', 'Autoneum Picking SMP-064', 'Fujikura Picking/Sequencing SMP-063', 'Fujikura Harness Putaway SMP-065', 'Fujikura Receiving SMP-065', 'Fujikura Retrauable repack SMP-062', 'Fujikura Scanning to Stock SMP-063', 'Fujikura Unpack SMP-064', 'Grammer Armrest SMP-050', 'Grammer Center Console SMP-051', 'Grammer Console Dock Socket SMP-052', 'Kasai Upper Armrest SMP-054', 'Kasai Lower Liftgate SMP-055', 'Material Handler', 'POAI Sweden - FT-001', 'POAI Welder - FT-002', 'POAI Helium - FT-003', 'POAI Headshield - FT-004', 'POAI Sequence - FT-006', 'Grammer Center Console Dock Socket SMP-052', 'Grammer Dock Socket SMP-053', 'Fujikura Scanning to Stock SMP-063', 'Fujikura Harness Rework SMP-061', 'Fujikura Receiving SMP-065', 'Fujikura Retrauable repack SMP-062', 'Fehrer Console SMP-020', 'Fehrer Armrest SMP-021', 'Fujikura Harness Putaway SMP-065', 'Mahle Harness Putaway - SMP-0--'],
+          'RANs/CKD': ['Battery Picking SMP-006', 'Battery Testing SMP-005', 'Dock Specialist', 'Material Handler', 'Parcel Staff SMP-009', 'RANS Picking/Labeling/Shipping FT-009', 'Sequencing GMA-016', 'Swagego - SMP-001', 'Helium - SMP-002', 'Headshield - SMP-004', 'POAI Inspection - FT - 005', 'Steel Assembly - SMP-006', 'POAI Picking - FT - 007', 'Service Parts - SMP-008', 'Double Bead Training']
+      };
+
+      // Function to populate the Process dropdown based on selected Zone
+      function populateProcessDropdown() {
+          const selectedZone = zoneSelect.value;
+          processNameSelect.innerHTML = '<option value="" class="select">Select a process</option>'; // Clear existing options
+          processNameSelect.disabled = true; // Disable until a valid zone is selected
+
+          if (selectedZone && zoneProcessMapping[selectedZone]) {
+              zoneProcessMapping[selectedZone].forEach(process => {
+                  const option = document.createElement('option');
+                  option.value = process;
+                  option.textContent = process;
+                  processNameSelect.appendChild(option);
+              });
+              processNameSelect.disabled = false; // Enable if processes are loaded
+          }
+      }
+
+      // Event listener for Zone dropdown change
+      zoneSelect.addEventListener('change', populateProcessDropdown);
+
+      // Initial call to set up the Process dropdown (it will be disabled initially)
+      populateProcessDropdown();
+
+
+      function showMessage(message, type = 'success') {
+        messageBox.textContent = message;
+        messageBox.className = 'show';
+        messageBox.style.backgroundColor = type === 'error' ? '#f44336' : '#4CAF50';
+
+        setTimeout(() => {
+          messageBox.classList.remove('show');
+        }, 3000);
+      }
+
+      function updateButtonText() {
+        if (giveFeedbackSelect.value === 'yes') {
+          submitButton.textContent = 'Next';
+        } else if (giveFeedbackSelect.value === 'no') {
+          submitButton.textContent = 'Submit';
+        } else {
+          submitButton.textContent = 'Next'; // Default
+        }
+      }
+
+      updateButtonText();
+      giveFeedbackSelect.addEventListener('change', updateButtonText);
+
+
+      trainingForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        const trainerName = document.getElementById('trainerName').value.trim();
+        const trainerEmployeeId = document.getElementById('trainerEmployeeId').value.trim();
+        const shift = document.getElementById('shift').value;
+        const customerName = document.getElementById('customerName').value.trim();
+        const zone = zoneSelect.value; // NEW: Get selected zone
+        const processName = processNameSelect.value; // MODIFIED: Get selected process
+        const traineeName = document.getElementById('traineeName').value.trim();
+        const traineeEmployeeId = document.getElementById('traineeEmployeeId').value.trim();
+        const startTime = document.getElementById('startTime').value;
+        const endTime = document.getElementById('endTime').value;
+        const giveFeedback = giveFeedbackSelect.value;
+
+        // Updated validation to include zone and ensure process is selected
+        if (!trainerName || !trainerEmployeeId || !shift || !customerName || !zone || !processName ||
+            !traineeName || !traineeEmployeeId || !startTime || !endTime || !giveFeedback) {
+          showMessage('Please fill in all required fields.', 'error');
+          return;
+        }
+
+        const startDate = new Date(startTime);
+        const endDate = new Date(endTime);
+        if (endDate <= startDate) {
+          showMessage('End date must be after start date.', 'error');
+          return;
+        }
+
+        const formData = {
+          trainerName: trainerName,
+          trainerEmployeeId: trainerEmployeeId,
+          shift: shift,
+          customerName: customerName,
+          zone: zone, // NEW: Include zone in formData
+          processName: processName, // Ensure this is the selected value
+          traineeName: traineeName,
+          traineeEmployeeId: traineeEmployeeId,
+          startTime: startTime,
+          endTime: endTime,
+          giveFeedback: giveFeedback
+        };
+
+        console.log('Trainer Log Data:', formData);
+
+        fetch('/submit_trainer_form', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showMessage(data.message, 'success');
+                trainingForm.reset();
+
+                if (data.redirect_url) {
+                    if (data.redirect_url.includes('/feedback_page/')) {
+                         const uuidMatch = data.redirect_url.match(/\/feedback_page\/(.*)/);
+                         if (uuidMatch && uuidMatch[1]) {
+                             sessionStorage.setItem('currentTrainerSubmissionUuid', uuidMatch[1]);
+                         }
+                    }
+                    window.location.href = data.redirect_url;
+                } else {
+                    window.location.href= "{{ url_for('Training_Congrats') }}"
+                }
+
+            } else {
+                showMessage(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error submitting trainer form:', error);
+            showMessage('An error occurred. Please try again later.', 'error');
+        });
+      });
+
+  
+employees = User.query.with_entities(User.full_name, User.employee_id).all()
+
+user = User.query.filter_by(employee_id=entered_id).first()
+if user:
+    employee_name = user.full_name
+else:
+    employee_name = "Unknown Employee"
+    });
+  </script>
+</body>
+</html>
