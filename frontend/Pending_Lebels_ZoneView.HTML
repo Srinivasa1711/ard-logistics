@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pending Labels</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <meta http-equiv="refresh" content="300">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Include Select2 CSS and JS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <style>
+        body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f0f2f5;
+        padding: 20px;
+        font-weight: normal;
+        color: #333;
+    }
+    .header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        background-color: #ffffff;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    }
+    .header .logo {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .header .logo img {
+        max-height: 80px;
+        margin-bottom: 10px;
+        border: 1px solid #e88f1a;
+        border-radius: 10%;
+        padding: 4px;
+        background-color: #bcc5d4;
+    }
+   .banner{
+        width: 100%;
+        background-color: #269a3d;
+        text-align: center;
+        padding: 25px 0;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
+        filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
+       
+         } 
+
+    .banner img {
+        width: 200px;
+        height: 160px;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        transition: transform 0.3s ease-in-out;
+    }
+    .banner img:hover {
+        transform: scale(1.03);
+    }
+       
+       nav {
+        margin-bottom: 30px;
+        text-align: center;
+        background-color: #ffffff;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 25px;
+    }
+    nav .btn {
+        margin: 0;
+        text-decoration: none;
+        color: white;
+        background-color: #28a745;
+        border-color: #28a745;
+        border-radius: 25px;
+        padding: 14px 30px;
+        font-size: 1.15em;
+        font-weight: bold;
+        transition: all 0.3s ease-in-out;
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+        cursor: pointer;
+        min-width: 160px;
+    
+    }
+    nav .btn:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+    }
+    .hidden-buttons-container {
+    display: none;
+    justify-content: center; 
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.hidden-buttons-container.active {
+    display: flex; 
+}
+    
+    .hidden-buttons-container .btn {
+    background-color: #007bff;
+    border-color: #007bff;
+    padding: 6px 12px;
+    font-size: 0.8em;  
+    min-width: 80px;  
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+    .hidden-buttons-container.active .btn:hover {
+        background-color: #0056b3; 
+         border-color: #004085;
+}
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .table-wrapper {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+        .zone-table-container {
+            width: 50%;
+            min-width: 300px;
+        }
+        h2 {
+            font-weight: bold;
+            text-align: center;
+            font-size: 1.5em;
+			font-weight: 900;
+            color: black;
+        }
+        .table-header-green {
+            background-color: #28a745;
+            color: #ffffff;
+        }
+		.pre-trim-buffer-container {
+			display: flex;
+			justify-content: space-between;
+			margin-bottom: 20px;
+		}
+		.pre-trim-buffer-box {
+			background-color:#28a745;
+			color: white;
+			padding: 10px;
+			border-radius: 5px;
+			width: 48%;
+			text-align: center;
+			font-size: 1.2em;
+			border: 2px solid black;
+			font-weight: 900;
+		}
+		.pre-trim-buffer-box .value {
+			font-size: 1.5em;
+			font-weight: 900;
+			color: black;
+		}
+        .high-pending {
+            background-color: #E20000;
+            color: #ffffff;
+        }
+        .low-pending {
+            background-color: #28a745;
+            color: #000000;
+        }
+        .high-skips {
+            background-color: #E20000;
+            color: #ffffff;
+        }
+        .low-skips {
+            background-color: #0BD31E;
+        }
+        .high-racks {
+            background-color: #FFE11C;
+        }
+        .low-racks {
+            background-color: #0BD31E;
+        }
+
+        /* Responsive Layout */
+        @media (max-width: 1200px) {
+            .table-wrapper {
+                flex-wrap: wrap;
+            }
+            .zone-table-container {
+                width: 48%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .zone-table-container {
+                width: 100%;
+            }
+        }
+        .gaa-flip-container {
+        perspective: 1000px;
+        width: 270px; 
+        height: 100px; 
+        margin: auto;
+        position: relative;
+    }
+
+    .gaa-flipper {
+        width: 100%;
+        height: 100%;
+        transition: transform 0.8s ease-in-out;
+        transform-style: preserve-3d;
+        position: relative;
+    }
+
+    .gaa-flipper.flip {
+        transform: rotateY(180deg);
+    }
+
+    .gaa-front,
+    .gaa-back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10%;
+        box-sizing: border-box;
+    }
+
+    .gaa-front {
+        background-color: transparent;
+        z-index: 2;
+    }
+
+    .gaa-front img {
+        max-height: 180px; 
+        /* border: 1px solid #e88f1a; */
+        border-radius: 10%;
+        /* padding: 4px; */ 
+        background-color: #bcc5d4; 
+    }
+
+    .gaa-back {
+        transform: rotateY(180deg);
+        /*background-color: #a8abb1; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center;  */
+        z-index: 1;
+        /* flex-direction: column;
+        margin-bottom: 20px;
+        padding: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); */
+    }
+
+    .gaa-back img { 
+        max-width: 300%; 
+        
+        object-fit: contain; 
+        padding: 4px;
+        
+    }
+
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <div class="gaa-flip-container">
+                <div class="gaa-flipper" id="gaaFlipper">
+                    <div class="gaa-front">
+                        <img src="{{ url_for('static', filename='GAA.jpg') }}" alt="GAA Logo">
+                    </div>
+                    <div class="gaa-back">
+                        <img src="{{ url_for('static', filename='Safety.jpg') }}" alt="Safety Message">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="banner">
+       <img src="{{ url_for('static', filename='ARD_Logo.jpg') }}" alt="ARD Logo">
+    </div>
+
+    <nav class="button-nav">
+        <button class="btn btn-success" id="pendingLabelsBtn">Pending Labels</button>
+
+        <div id="additionalButtons" class="hidden-buttons-container">
+            <button class="btn btn-success" onclick="window.location.href='/'">Filter View</button>
+            <button class="btn btn-success" onclick="window.location.href='/zone'">Zone View</button>
+        </div>
+
+        <button class="btn btn-success" onclick="window.location.href='/charts'">Charts</button>
+        <button class="btn btn-success" onclick="window.location.href='/ckd'">CKD Charts</button>
+        <button class="btn btn-success" onclick="window.location.href='/efficiency_report'">Efficiency Report</button>
+        <button class="btn btn-success" onclick="window.location.href='/racks_pending'">Racks Pending</button>
+    </nav>
+    
+	
+	<div class="pre-trim-buffer-container">
+        <div class="pre-trim-buffer-box" style="background-color:#28a745;">
+            <strong style="color: black;">Plant 1 Pre-Trim Buffer</strong>
+            <div class="value">{{ plant_1_pre_trim }}</div>
+        </div>
+        <div class="pre-trim-buffer-box" style="background-color:#28a745;">
+            <strong style="color: black;">Plant 2 Pre-Trim Buffer</strong>
+            <div class="value">{{ plant_2_pre_trim }}</div>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <div class="zone-table-container">
+            <h2>Zone 1</h2>
+            <table id="table-Zone-1" class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th class="table-header-green">Center ID</th>
+                        <th class="table-header-green">Pending Labels</th>
+                        <th class="table-header-green">Skips(Prod#)</th>
+                        <th class="table-header-green">Racks Not Shipped</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data if row[1] == 'Zone 1' %}
+                    <tr>
+                        <td>{{ row[0] }}</td>
+                        <td class="{{ 'high-pending' if row[2] > 50 else 'low-pending' }}">{{ row[2] }}</td>
+                        <td class="{{ 'high-skips' if row[3] > 0 else 'low-skips' }}">{{ row[3] }}</td>
+                        <td class="{{ 'high-racks' if row[4] > 0 else 'low-racks' }}">{{ row[4] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="zone-table-container">
+            <h2>Zone 2</h2>
+            <table id="table-Zone-2" class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th class="table-header-green">Center ID</th>
+                        <th class="table-header-green">Pending Labels</th>
+                        <th class="table-header-green">Skips(Prod#)</th>
+                        <th class="table-header-green">Racks Not Shipped</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data if row[1] == 'Zone 2' %}
+                    <tr>
+                        <td>{{ row[0] }}</td>
+                        <td class="{{ 'high-pending' if row[2] > 50 else 'low-pending' }}">{{ row[2] }}</td>
+                        <td class="{{ 'high-skips' if row[3] > 0 else 'low-skips' }}">{{ row[3] }}</td>
+                        <td class="{{ 'high-racks' if row[4] > 0 else 'low-racks' }}">{{ row[4] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+    <script>
+        $(document).ready(function () {
+            function updateTable() {
+                fetch('/api/pending_labels')
+                    .then(response => response.json())
+                    .then(data => {
+                        ['Zone 1', 'Zone 2', 'Zone 3'].forEach(zone => {
+                            const tableBody = document.querySelector(`#table-${zone.replace(" ", "-")} tbody`);
+                            tableBody.innerHTML = '';
+
+                            data.data.forEach(row => {
+                                if (row[1] === zone) {
+                                    const tr = document.createElement('tr');
+                                    tr.innerHTML = `
+                                        <td>${row[0]}</td>
+                                        <td class="${row[2] > 50 ? 'high-pending' : 'low-pending'}">${row[2]}</td>
+                                        <td class="${row[3] > 0 ? 'high-skips' : 'low-skips'}">${row[3]}</td>
+                                        <td class="${row[4] > 0 ? 'high-racks' : 'low-racks'}">${row[4]}</td>
+                                    `;
+                                    tableBody.appendChild(tr);
+                                }
+                            });
+                        });
+                    })
+                    .catch(error => console.error('Error fetching table data:', error));
+            }
+
+        // Function to update pre-trim buffers from the server
+        function updatePreTrimBuffers() {
+            fetch('/api/pre_trim_buffers')
+                .then(response => response.json())
+                .then(data => {
+                    const plant1Buffer = document.querySelector('.pre-trim-buffer-box:nth-child(1)');
+                    const plant2Buffer = document.querySelector('.pre-trim-buffer-box:nth-child(2)');
+
+                    plant1Buffer.style.backgroundColor = data.plant_1_color;
+                    plant1Buffer.querySelector('.value').textContent = data.plant_1_pre_trim;
+
+                    plant2Buffer.style.backgroundColor = data.plant_2_color;
+                    plant2Buffer.querySelector('.value').textContent = data.plant_2_pre_trim;
+                })
+                .catch(error => console.error('Error fetching pre-trim buffer data:', error));
+        }
+
+        // Schedule updates every minute
+        setInterval(() => {
+            updateTable();
+            updatePreTrimBuffers();
+        }, 60000); // 60 seconds interval
+
+        // Initial load
+        updateTable();
+        updatePreTrimBuffers();
+    });
+    document.addEventListener("DOMContentLoaded", function () {
+    const pendingLabelsBtn = document.getElementById('pendingLabelsBtn');
+    const additionalButtons = document.getElementById('additionalButtons');
+
+    pendingLabelsBtn.addEventListener('click', function() {
+        additionalButtons.classList.toggle('active'); 
+    });
+    function updatePreTrimBuffers() {
+        fetch('/api/pre_trim_buffers')
+                .then(response => response.json())
+                .then(data => {
+                    const plant1Buffer = document.querySelector('.pre-trim-buffer-box:nth-child(1)');
+                    const plant2Buffer = document.querySelector('.pre-trim-buffer-box:nth-child(2)');
+
+                    plant1Buffer.style.backgroundColor = data.plant_1_color;
+                    plant1Buffer.querySelector('.value').textContent = data.plant_1_pre_trim;
+
+                    plant2Buffer.style.backgroundColor = data.plant_2_color;
+                    plant2Buffer.querySelector('.value').textContent = data.plant_2_pre_trim;
+                })
+                .catch(error => console.error('Error fetching pre-trim buffer data:', error));
+        }
+
+        // Schedule updates every minute
+        setInterval(() => {
+            updateTable();
+            updatePreTrimBuffers();
+        }, 60000); // 60 seconds interval
+       
+
+        // Initial load
+        updateTable();
+        updatePreTrimBuffers();
+    });
+    setInterval(() => {
+            const flipper = document.getElementById("gaaFlipper");
+            flipper.classList.toggle("flip");
+        }, 5000);
+ 
+
+
+    </script>
+</html>
