@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trainee Feedback Form</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* Set basic font and background for the whole page */
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0f963e;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    /* Styles for the logo container */
+    .logo-container {
+        width: 100%;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    /* Styles for the logo image */
+    .logo-container img {
+        max-width: 120px;
+        max-height: 80px;
+        height: auto;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        border-radius: 15px;
+        filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
+    }
+    .logo-container img:hover {
+        transform: scale(1.03);
+    }
+
+    /* Styles for the message box (for success/error messages) */
+    #message-box {
+      display: none;
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #4CAF50;
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      text-align: center;
+      font-weight: 500;
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+      max-width: 90%;
+    }
+    #message-box.show {
+      opacity: 1;
+      display: block;
+    }
+
+    /* Styles for the main form container */
+    .form-container {
+      background-color: white;
+      padding: 32px;
+      border-radius: 16px;
+      box-shadow: 0 30px 50px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 700px;
+      border: 1px solid #e5e7eb;
+    }
+
+    /* Styles for the form title */
+    .form-title {
+      background-image: linear-gradient(to right, #0f963e, #1aab50);
+      color: white;
+      padding: 10px 20px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      font-size: 1.575rem;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      z-index: 15;
+      margin-bottom: 1.5rem;
+      border-radius: 15px;
+      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
+    }
+    .form-title:hover {
+      transform: scale(1.03);
+    }
+
+    /* Styles for section titles within the form */
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #1f2937;
+      margin-top: 1.25rem;
+    }
+
+    /* Styles for form sections */
+    .form-section {
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    /* Hide the specific questions initially */
+    #lowSkillQuestions { 
+        display: none;
+    }
+
+    /* Styles for form labels */
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #374151;
+      margin-bottom: 0.25rem;
+      margin-top: 1.25rem;
+    }
+
+    /* Styles for form input fields */
+    .form-input {
+      display: block;
+      width: 100%;
+      padding: 0.5rem 1rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      transition: border 0.2s, box-shadow 0.2s;
+    }
+    .form-input:focus {
+      border-color: #6366f1;
+      outline: none;
+    }
+    textarea.form-input {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    /* Styles for grid layout */
+    .form-grid {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    /* Responsive grid for larger screens */
+    @media (min-width: 768px) {
+      .form-grid-2 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    /* Styles for the submit/next button */
+    .submit-btn {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: white;
+      background-color: #4f46e5;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.2s;
+      margin-top: 1.5rem;
+      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
+    }
+
+    .submit-btn:hover {
+      background-color: #4338ca;
+      transform: scale(1.05);
+    }
+
+    /* Styles for placeholder text in select */
+    .select {
+        color: gray;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="message-box"></div>
+
+  <div class="form-container">
+    <div class="logo-container">
+        <img src="{{ url_for('static', filename='ARD_Logo.jpg') }}" alt="ARD Logo">
+    </div>
+    <h1 class="form-title">Trainee Feedback Form</h1>
+
+    <form id="traineeFeedbackForm">
+
+      <div class="form-section">
+        <h2 class="section-title">Feedback about trainers</h2>
+        <div class="form-grid">
+          <div>
+            <label class="form-label">1. Did the trainer demonstrate a thorough understanding of the subject matter?</label>
+            <div class="mt-2 space-y-2">
+                <div class="flex items-center">
+                    <input id="q1-sa" name="q1_understanding" type="radio" value="Strongly Agree" class="h-4 w-4 text-indigo-600 border-gray-300 rounded" required>
+                    <label for="q1-sa" class="ml-2 text-sm text-gray-700">Strongly Agree</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="q1-a" name="q1_understanding" type="radio" value="Agree" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="q1-a" class="ml-2 text-sm text-gray-700">Agree</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="q1-n" name="q1_understanding" type="radio" value="Neutral" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="q1-n" class="ml-2 text-sm text-gray-700">Neutral</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="q1-d" name="q1_understanding" type="radio" value="Disagree" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="q1-d" class="ml-2 text-sm text-gray-700">Disagree</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="q1-sd" name="q1_understanding" type="radio" value="Strongly Disagree" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="q1-sd" class="ml-2 text-sm text-gray-700">Strongly Disagree</label>
+                </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="form-label">2. Were they able to answer your questions accurately and clearly?</label>
+            <div class="mt-2 space-y-2">
+                <div class="flex items-center">
+                    <input id="q2-sa" name="q2_clarity" type="radio" value="Strongly Agree" class="h-4 w-4 text-indigo-600 border-gray-300 rounded" required>
+                    <label for="q2-sa" class="ml-2 text-sm text-gray-700">Strongly Agree</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="q2-a" name="q2_clarity" type="radio" value="Agree" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="q2-a" class="ml-2 text-sm text-gray-700">Agree</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="q2-n" name="q2_clarity" type="radio" value="Neutral" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="q2-n" class="ml-2 text-sm text-gray-700">Neutral</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="q2-d" name="q2_clarity" type="radio" value="Disagree" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="q2-d" class="ml-2 text-sm text-gray-700">Disagree</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="q2-sd" name="q2_clarity" type="radio" value="Strongly Disagree" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="q2-sd" class="ml-2 text-sm text-gray-700">Strongly Disagree</label>
+                </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="form-label">3. Was the trainer's communication clear and easy to understand?</label>
+            <div class="mt-2 space-y-2">
+               <div class="flex items-center">
+                    <input id="q3-e" name="q3_communication" type="radio" value="Excellent" class="h-4 w-4 text-indigo-600 border-gray-300 rounded" required>
+                    <label for="q3-e" class="ml-2 text-sm text-gray-700">Excellent</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="q3-g" name="q3_communication" type="radio" value="Good" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="q3-g" class="ml-2 text-sm text-gray-700">Good</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="q3-a" name="q3_communication" type="radio" value="Average" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="q3-a" class="ml-2 text-sm text-gray-700">Average</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="q3-f" name="q3_communication" type="radio" value="Fair" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="q3-f" class="ml-2 text-sm text-gray-700">Fair</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="q3-p" name="q3_communication" type="radio" value="Poor" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="q3-p" class="ml-2 text-sm text-gray-700">Poor</label>
+                </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="form-label">4. Did the trainer manage the training time effectively?</label>
+            <div class="mt-2 space-y-2">
+               <div class="flex items-center">
+                    <input id="q4-always" name="q4_time_management" type="radio" value="Always" class="h-4 w-4 text-indigo-600 border-gray-300 rounded" required>
+                    <label for="q4-always" class="ml-2 text-sm text-gray-700">Always</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="q4-often" name="q4_time_management" type="radio" value="Often" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="q4-often" class="ml-2 text-sm text-gray-700">Often</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="q4-sometimes" name="q4_time_management" type="radio" value="Sometimes" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="q4-sometimes" class="ml-2 text-sm text-gray-700">Sometimes</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="q4-rarely" name="q4_time_management" type="radio" value="Rarely" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="q4-rarely" class="ml-2 text-sm text-gray-700">Rarely</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="q4-never" name="q4_time_management" type="radio" value="Never" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="q4-never" class="ml-2 text-sm text-gray-700">Never</label>
+                </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="form-label">5. Did the trainer give the right amount of information for the time you had? </label>
+            <div class="mt-2 space-y-2">
+               <div class="flex items-center">
+                    <input id="q5-ftm" name="q5_info_amount" type="radio" value="Far too much information" class="h-4 w-4 text-indigo-600 border-gray-300 rounded" required>
+                    <label for="q5-ftm" class="ml-2 text-sm text-gray-700">Far too much information</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="q5-btm" name="q5_info_amount" type="radio" value="A bit too much information" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="q5-btm" class="ml-2 text-sm text-gray-700">A bit too much information</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="q5-justright" name="q5_info_amount" type="radio" value="Just right / Good Balance" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="q5-justright" class="ml-2 text-sm text-gray-700">Just right / Good Balance</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="q5-btl" name="q5_info_amount" type="radio" value="A bit too little information" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="q5-btl" class="ml-2 text-sm text-gray-700">A bit too little information</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="q5-ftl" name="q5_info_amount" type="radio" value="Far too little information" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="q5-ftl" class="ml-2 text-sm text-gray-700">Far too little information</label>
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h2 class="section-title">Trainee Overall Feedback</h2>
+        <div class="form-grid">
+          <div>
+            <label for="overallFeedbackText" class="form-label">Feedback</label>
+            <textarea id="overallFeedbackText" name="overallFeedbackText" class="form-input" placeholder="Provide detailed feedback What type of support or additional training do you think would be most beneficial for your training?" rows="5" required autocomplete="off"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn">Submit Feedback</button>
+    </form>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const traineeFeedbackForm = document.getElementById('traineeFeedbackForm'); 
+      const messageBox = document.getElementById('message-box');
+
+      function showMessage(message, type = 'success') {
+        messageBox.textContent = message;
+        messageBox.className = 'show';
+        messageBox.style.backgroundColor = type === 'error' ? '#f44336' : '#4CAF50';
+
+        setTimeout(() => {
+          messageBox.classList.remove('show');
+        }, 3000);
+      }
+
+      traineeFeedbackForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        // Get values from all radio buttons
+        const q1_understanding = document.querySelector('input[name="q1_understanding"]:checked')?.value || '';
+        const q2_clarity = document.querySelector('input[name="q2_clarity"]:checked')?.value || '';
+        const q3_communication = document.querySelector('input[name="q3_communication"]:checked')?.value || '';
+        const q4_time_management = document.querySelector('input[name="q4_time_management"]:checked')?.value || '';
+        const q5_info_amount = document.querySelector('input[name="q5_info_amount"]:checked')?.value || '';
+        const overallFeedbackText = document.getElementById('overallFeedbackText').value.trim();
+
+        // Basic validation for all fields
+        if (!q1_understanding || !q2_clarity || !q3_communication || !q4_time_management || !q5_info_amount || !overallFeedbackText) {
+          showMessage('Please answer all questions and provide overall feedback.', 'error');
+          return;
+        }
+
+        const formData = {
+            q1_understanding: q1_understanding,
+            q2_clarity: q2_clarity,
+            q3_communication: q3_communication,
+            q4_time_management: q4_time_management,
+            q5_info_amount: q5_info_amount,
+            overall_feedback_text: overallFeedbackText
+        };
+
+        console.log('Trainee Feedback Data:', formData);
+
+        // Send data to Flask backend
+        fetch('/submit_trainee_feedback', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showMessage(data.message, 'success');
+                traineeFeedbackForm.reset(); // Clear the form
+                setTimeout(() => {
+                  window.location.href = "{{ url_for('Training_Congrats') }}"; // Redirect after success
+                }, 1000);
+            } else {
+                showMessage(data.message, 'error');
+            }
+        })
+        .catch(error => {
+          // Error message if form is not submitted
+            console.error('Error submitting trainee feedback:', error);
+            showMessage('An error occurred during submission. Please try again later.', 'error');
+        });
+      });
+    });
+  </script>
+</body>
+</html>
