@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trainer Feedback Form</title> <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* Set basic font and background for the whole page */
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0f963e;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    /* Styles for the logo container */
+    .logo-container {
+        width: 100%;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    /* Styles for the logo image */
+    .logo-container img {
+        max-width: 120px;
+        max-height: 80px;
+        height: auto;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        border-radius: 15px;
+        filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
+    }
+    .logo-container img:hover {
+        transform: scale(1.03);
+    }
+
+    /* Styles for the message box (for success/error messages) */
+    #message-box {
+      display: none;
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #4CAF50;
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      text-align: center;
+      font-weight: 500;
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+      max-width: 90%;
+    }
+    #message-box.show {
+      opacity: 1;
+      display: block;
+    }
+
+    /* Styles for the main form container */
+    .form-container {
+      background-color: white;
+      padding: 32px;
+      border-radius: 16px;
+      box-shadow: 0 30px 50px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 700px;
+      border: 1px solid #e5e7eb;
+    }
+
+    /* Styles for the form title */
+    .form-title {
+      background-image: linear-gradient(to right, #0f963e, #1aab50);
+      color: white;
+      padding: 10px 20px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      font-size: 1.575rem;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      z-index: 15;
+      margin-bottom: 1.5rem;
+      border-radius: 15px;
+      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
+    }
+    .form-title:hover {
+      transform: scale(1.03);
+    }
+
+    /* Styles for section titles within the form */
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 1rem;
+    }
+
+    /* Styles for form sections */
+    .form-section {
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    /* Hide the specific questions initially */
+    #lowSkillQuestions {
+        display: none;
+    }
+
+    /* Styles for form labels */
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #374151;
+      margin-bottom: 0.25rem;
+    }
+
+    /* Styles for form input fields */
+    .form-input {
+      display: block;
+      width: 100%;
+      padding: 0.5rem 1rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      transition: border 0.2s, box-shadow 0.2s;
+    }
+    .form-input:focus {
+      border-color: #6366f1;
+      outline: none;
+    }
+    textarea.form-input {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    /* Styles for grid layout */
+    .form-grid {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    /* Responsive grid for larger screens */
+    @media (min-width: 768px) {
+      .form-grid-2 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    /* Styles for the submit/next button */
+    .submit-btn {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: white;
+      background-color: #4f46e5;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.2s;
+      margin-top: 1.5rem;
+      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
+    }
+
+    .submit-btn:hover {
+      background-color: #4338ca;
+      transform: scale(1.05);
+    }
+
+    /* Styles for placeholder text in select */
+    .select {
+        color: gray;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="message-box"></div>
+
+  <div class="form-container">
+    <div class="logo-container">
+       <img src="{{ url_for('static', filename='ARD_Logo.jpg') }}" alt="ARD Logo">
+    </div>
+    <h1 class="form-title">Trainer Feedback Form</h1> <form id="feedbackForm">
+
+      <div class="form-section">
+        <h2 class="section-title">Skill Assessment</h2>
+        <div class="form-grid">
+          <div>
+            <label for="skillLevel" class="form-label"> Trainee Rating (1-10)</label>
+            <input type="number" id="skillLevel" name="skillLevel" class="form-input" min="1" max="10" placeholder="Enter skill level (1-10)" required autocomplete="off"/>
+          </div>
+        </div>
+      </div>
+
+      <div id="lowSkillQuestions" class="form-section">
+        <h2 class="section-title">Reasons for Low Skill Level (1-4)</h2>
+        <div class="form-grid">
+          <div>
+            <label class="form-label">1. What specific areas or tasks did the trainee struggle with most that led to this skill rating? (Select all that apply)</label>
+            <div class="mt-2 space-y-2">
+                <div class="flex items-center">
+                    <input id="area-inventory" name="struggleAreas" type="checkbox" value="inventory management" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="area-inventory" class="ml-2 text-sm text-gray-700">Inventory management</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="area-shipping" name="struggleAreas" type="checkbox" value="shipping procedures" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="area-shipping" class="ml-2 text-sm text-gray-700">Shipping procedures</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="area-software" name="struggleAreas" type="checkbox" value="using the software" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="area-software" class="ml-2 text-sm text-gray-700">Using the software</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="area-other-checkbox" name="struggleAreas" type="checkbox" value="other" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="area-other-checkbox" class="ml-2 text-sm text-gray-700">Other (please specify)</label>
+                </div>
+                <textarea id="area-other-text" name="struggleAreasOther" class="form-input mt-2" placeholder="Specify other struggle area..." rows="2" style="display: none;"></textarea>
+            </div>
+          </div>
+
+          <div>
+            <label class="form-label">2. What do you believe are the primary reasons for this skill gap? (Select all that apply)</label>
+            <div class="mt-2 space-y-2">
+                <div class="flex items-center">
+                    <input id="reason-understanding" name="skillGapReason" type="checkbox" value="lack of understanding" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="reason-understanding" class="ml-2 text-sm text-gray-700">Lack of understanding</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="reason-application" name="skillGapReason" type="checkbox" value="difficulty with practical application" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="reason-application" class="ml-2 text-sm text-gray-700">Difficulty with practical application</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="reason-pace" name="skillGapReason" type="checkbox" value="slow learning pace" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="reason-pace" class="ml-2 text-sm text-gray-700">Slow learning pace</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="reason-detail" name="skillGapReason" type="checkbox" value="attention to detail" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="reason-detail" class="ml-2 text-sm text-gray-700">Attention to detail</label>
+                </div>
+                <div class="flex items-center">
+                    <input id="reason-other-checkbox" name="skillGapReason" type="checkbox" value="other" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="reason-other-checkbox" class="ml-2 text-sm text-gray-700">Other (please specify)</label>
+                </div>
+                <textarea id="reason-other-text" name="skillGapReasonOther" class="form-input mt-2" placeholder="Specify other reason..." rows="2" style="display: none;"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h2 class="section-title">Trainer Overall Feedback</h2>
+        <div class="form-grid">
+          <div>
+            <label for="overallFeedbackText" class="form-label">Feedback</label>
+            <textarea id="overallFeedbackText" name="overallFeedbackText" class="form-input" placeholder="Provide detailed feedback What type of support or additional training do you think would be most beneficial for this trainee to improve their skills?" rows="5" required autocomplete="off"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn">Submit Feedback</button>
+    </form>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // For entire feedback page 
+      const feedbackForm = document.getElementById('feedbackForm');
+      const messageBox = document.getElementById('message-box');
+      const skillLevelInput = document.getElementById('skillLevel');
+      const lowSkillQuestionsDiv = document.getElementById('lowSkillQuestions');
+
+      // For "Specific Areas" checkboxes
+      const areaOtherCheckbox = document.getElementById('area-other-checkbox');
+      const areaOtherText = document.getElementById('area-other-text');
+      const struggleAreasCheckboxes = document.querySelectorAll('input[name="struggleAreas"]');
+
+      // For "Reasons for Skill Gap" checkboxes
+      const reasonOtherCheckbox = document.getElementById('reason-other-checkbox');
+      const reasonOtherText = document.getElementById('reason-other-text');
+      const skillGapReasonCheckboxes = document.querySelectorAll('input[name="skillGapReason"]');
+
+
+      // Function to show messages (success or error)
+      function showMessage(message, type = 'success') {
+        messageBox.textContent = message;
+        messageBox.className = 'show';
+        messageBox.style.backgroundColor = type === 'error' ? '#f44336' : '#4CAF50';
+
+        setTimeout(() => {
+          messageBox.classList.remove('show');
+        }, 3000); // Hide after 3 seconds
+      }
+
+      // Get the UUID from the Flask context (passed from redirect)
+      // UUID (Universally Unique Identifier) is a 128-bit identifier used to uniquely identify information in distributed systems.
+      const trainerSubmissionUuid = "{{ submission_uuid }}";
+
+      // Fallback to sessionStorage if URL param is not directly available (For example: If page reloaded)
+      const storedUuid = sessionStorage.getItem('currentTrainerSubmissionUuid');
+      const finalTrainerSubmissionUuid = trainerSubmissionUuid || storedUuid;
+
+      if (!finalTrainerSubmissionUuid || finalTrainerSubmissionUuid === 'None') { // Check for 'None' string too
+        showMessage("Error: No associated trainer form ID found for feedback. Please try submitting the trainer form again.", "error");
+        console.error("Trainer form UUID missing for feedback submission.");
+        // Optionally disable the form submission button
+        feedbackForm.querySelector('button[type="submit"]').disabled = true;
+      } else {
+        console.log('Feedback will be linked to Trainer Submission UUID:', finalTrainerSubmissionUuid);
+      }
+
+
+      // Function to toggle display of low skill questions based on skillLevel
+      function toggleLowSkillQuestions() {
+        const skillLevel = parseInt(skillLevelInput.value, 10);
+        if (skillLevel >= 1 && skillLevel <= 4) { // If skill level is low (1-4)
+          lowSkillQuestionsDiv.style.display = 'block'; // Show the extra questions
+        } else { // If skill level is higher (5-10)
+          lowSkillQuestionsDiv.style.display = 'none'; // Hide the extra questions
+
+          // Clear and uncheck all related fields in the hidden section
+          areaOtherText.style.display = 'none';
+          areaOtherText.value = '';
+          areaOtherText.removeAttribute('required');
+          areaOtherCheckbox.checked = false;
+          struggleAreasCheckboxes.forEach(checkbox => checkbox.checked = false);
+
+          reasonOtherText.style.display = 'none';
+          reasonOtherText.value = '';
+          reasonOtherText.removeAttribute('required');
+          reasonOtherCheckbox.checked = false;
+          skillGapReasonCheckboxes.forEach(checkbox => checkbox.checked = false);
+        }
+      }
+
+      // Event listener for skill level input changes (to show/hide questions dynamically)
+      skillLevelInput.addEventListener('input', toggleLowSkillQuestions);
+
+      // Event listeners for "Other" checkboxes to show/hide their respective textareas
+      areaOtherCheckbox.addEventListener('change', function() {
+          if (this.checked) {
+              areaOtherText.style.display = 'block';
+              areaOtherText.setAttribute('required', 'true');
+          } else {
+              areaOtherText.style.display = 'none';
+              areaOtherText.value = ''; // Clear text if unchecked
+              areaOtherText.removeAttribute('required');
+          }
+      });
+
+      reasonOtherCheckbox.addEventListener('change', function() {
+          if (this.checked) {
+              reasonOtherText.style.display = 'block';
+              reasonOtherText.setAttribute('required', 'true');
+          } else {
+              reasonOtherText.style.display = 'none';
+              reasonOtherText.value = ''; // Clear text if unchecked
+              reasonOtherText.removeAttribute('required');
+          }
+      });
+
+      // Initial check on page load to set correct display state of questions
+      toggleLowSkillQuestions();
+
+
+      // --- Event Listener for Feedback Form Submission ---
+      feedbackForm.addEventListener('submit', function (event) {
+        event.preventDefault(); // Prevent default form submission
+
+        // Ensure we have a valid trainerSubmissionUuid before proceeding
+        if (!finalTrainerSubmissionUuid || finalTrainerSubmissionUuid === 'None') {
+            showMessage("Cannot submit feedback: Missing associated trainer form ID.", "error");
+            return;
+        }
+
+        // Get values from general feedback fields
+        const skillLevel = document.getElementById('skillLevel').value.trim();
+        const overallFeedbackText = document.getElementById('overallFeedbackText').value.trim(); // Changed ID from feedbackText
+
+        // Basic validation for general feedback fields
+        if (!skillLevel || !overallFeedbackText) {
+          showMessage('Please fill in all general feedback fields.', 'error');
+          return;
+        }
+
+        // Validate skill level is within range
+        const skillLevelNum = parseInt(skillLevel, 10);
+        if (isNaN(skillLevelNum) || skillLevelNum < 1 || skillLevelNum > 10) {
+            showMessage('Skill Level must be a number between 1 and 10.', 'error');
+            return;
+        }
+
+        let selectedStruggleAreas = [];
+        let selectedReasons = [];
+
+        // Validate low skill questions and gather data if displayed
+        if (skillLevelNum >= 1 && skillLevelNum <= 4) {
+            let isStruggleAreaSelected = false;
+            struggleAreasCheckboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    isStruggleAreaSelected = true;
+                    if (checkbox.value === 'other') {
+                        // Ensure the other text field is filled if 'other' is checked
+                        if (!areaOtherText.value.trim()) {
+                            showMessage('Please specify the "Other" struggle area.', 'error');
+                            areaOtherText.focus();
+                            throw new Error('Validation failed'); // Stop submission
+                        }
+                        selectedStruggleAreas.push(`Other: ${areaOtherText.value.trim()}`);
+                    } else {
+                        selectedStruggleAreas.push(checkbox.value);
+                    }
+                }
+            });
+
+            if (!isStruggleAreaSelected) {
+                showMessage('Please select at least one specific area the trainee struggled with.', 'error');
+                throw new Error('Validation failed'); // Stop submission
+            }
+
+            let isSkillGapReasonSelected = false;
+            skillGapReasonCheckboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    isSkillGapReasonSelected = true;
+                    if (checkbox.value === 'other') {
+                         // Ensure the other text field is filled if 'other' is checked
+                        if (!reasonOtherText.value.trim()) {
+                            showMessage('Please specify the "Other" reason for the skill gap.', 'error');
+                            reasonOtherText.focus();
+                            throw new Error('Validation failed'); // Stop submission
+                        }
+                        selectedReasons.push(`Other: ${reasonOtherText.value.trim()}`);
+                    } else {
+                        selectedReasons.push(checkbox.value);
+                    }
+                }
+            });
+
+            if (!isSkillGapReasonSelected) {
+                showMessage('Please select at least one reason for the skill gap.', 'error');
+                throw new Error('Validation failed'); // Stop submission
+            }
+        }
+
+
+        // Prepare feedback data to send to Flask
+        const feedbackData = {
+          trainerFormUuid: finalTrainerSubmissionUuid, // The UUID of the associated trainer form
+          skillLevel: skillLevelNum,
+          overall_feedback_text: overallFeedbackText, // Mapped to the correct ID
+          struggleAreas: selectedStruggleAreas, // Will be empty if skillLevel is > 4
+          skillGapReason: selectedReasons,     // Will be empty if skillLevel is > 4
+        };
+
+        console.log('Submitting Feedback Data:', feedbackData);
+
+        // Send feedback data to Flask backend
+        fetch('/submit_feedback', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(feedbackData)
+        })
+        .then(response => {
+            if (!response.ok) { // Check for non-2xx responses (like 400, 404, 500)
+                // If validation failed or server error, throw an error to catch block
+                return response.json().then(errorData => { throw new Error(errorData.message); });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                showMessage(data.message, 'success');
+                feedbackForm.reset(); // Clear the feedback form
+                sessionStorage.removeItem('currentTrainerSubmissionUuid'); // Clean up session storage
+                // Redirect to a success page after a short delay
+                setTimeout(() => {
+                  window.location.href = "{{ url_for('Training_Congrats') }}";
+                }, 1000);
+            } else {
+                showMessage(data.message, 'error'); // Show error message from server
+            }
+        })
+        .catch(error => {
+            console.error('Error submitting feedback:', error);
+            // Display error message from catch (either network error or server message)
+            showMessage(`An error occurred: ${error.message}. Please try again.`, 'error');
+        });
+      });
+    });
+  </script>
+</body>
+</html>
