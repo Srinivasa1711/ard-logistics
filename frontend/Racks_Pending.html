@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Racks Pending</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.1.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f0f2f5;
+        padding: 20px;
+        color: #333;
+    }
+    .header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background-color: #ffffff;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    }
+    .header .logo img {
+        max-height: 80px;
+        margin-bottom: 10px;
+        /* border: 1px solid #e88f1a; */
+        border-radius: 10%;
+        padding: 4px;
+        background-color: #bcc5d4;
+    }
+   .banner{
+        width: 100%;
+        background-color: #269a3d;
+        text-align: center;
+        padding: 25px 0;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
+        filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
+
+           }
+
+    .banner img {
+        width: 230px;
+        height: 160px;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        transition: transform 0.3s ease-in-out;
+    }
+    .banner img:hover {
+        transform: scale(1.03);
+    }
+    nav {
+        margin-bottom: 30px;
+        text-align: center;
+        background-color: #ffffff;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+    nav .btn {
+        text-decoration: none;
+        color: white;
+        background-color: #28a745;
+        border-radius: 25px;
+        padding: 14px 30px;
+        font-size: 1.15em;
+        font-weight: bold;
+        transition: all 0.3s ease-in-out;
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+        cursor: pointer;
+        min-width: 160px;
+    }
+    nav .btn:hover {
+        background-color: #218838;
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+    }
+    .hidden-buttons-container {
+        display: none;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .hidden-buttons-container.active {
+        display: flex;
+    }
+    .hidden-buttons-container .btn {
+        background-color: #007bff;
+        padding: 6px 12px;
+        font-size: 0.8em;
+        min-width: 80px;
+    }
+    .hidden-buttons-container .btn:hover {
+        background-color: #0056b3;
+    }
+    #toggle-pilot-btn{
+        background-color: #218838;
+        border-radius: 25px;
+        color: white;
+        font-weight: bold;
+    }
+    .my-4 {
+        color: #2a5639;
+        text-align: center;
+        margin: 30px 0;
+        font-size: 2.5em;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    }
+    .filter-container {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        align-items: flex-end; /* Align items to the bottom */
+    }
+    .filter-group {
+        flex: 1;
+        min-width: 280px;
+        position: relative; /* Keep relative for dropdown positioning */
+    }
+
+    .filter-group .input-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .filter-group .search-input {
+        flex-grow: 1;
+        padding: 10px 15px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 1em;
+        box-sizing: border-box;
+        outline: none;
+        transition: border-color 0.2s;
+        height: 38px;
+    }
+
+    .filter-container .btn {
+        margin-top: 15px;
+        padding: 10px 20px;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background-color: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    th, td {
+        padding: 12px 15px;
+        border: 1px solid #ddd;
+        text-align: left;
+    }
+    th {
+        background-color: #2a5639;
+        color: white;
+    }
+    .hidden-column {
+        display: none;
+    }
+
+    /* Styles for new search box dropdowns and tags */
+    .checkbox-dropdown {
+        position: absolute;
+        top: calc(100% + 5px);
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background-color: #fff;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        max-height: 250px;
+        overflow-y: auto;
+        padding: 10px;
+        display: none;
+    }
+    .checkbox-dropdown.show {
+        display: block;
+    }
+    .checkbox-dropdown div {
+        margin-bottom: 8px;
+        padding: 4px 0;
+    }
+    .checkbox-dropdown div:last-child {
+        margin-bottom: 0;
+    }
+    .checkbox-dropdown input[type="checkbox"] {
+        margin-right: 8px;
+        transform: scale(1.1);
+        cursor: pointer;
+    }
+    .checkbox-dropdown label {
+        font-weight: normal;
+        color: #333;
+        display: inline-block;
+        cursor: pointer;
+    }
+    .no-results {
+        padding: 10px;
+        color: #6c757d;
+        text-align: center;
+    }
+    .selected-tags-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        padding-top: 0;
+        padding-bottom: 5px;
+        max-width: 100%;
+        white-space: nowrap;
+        scrollbar-width: thin;
+        align-items: center;
+        min-height: 24px;
+        height: auto;
+        overflow-x: auto;
+        border: none;
+        background-color: transparent;
+        border-radius: 0;
+        margin-bottom: 5px;
+    }
+
+    .selected-tag {
+        background-color: #e0f7fa;
+        color: #0056b3;
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.9em;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        white-space: nowrap;
+    }
+    .remove-tag {
+        cursor: pointer;
+        font-weight: bold;
+        color: #007bff;
+        font-size: 1.1em;
+    }
+    .remove-tag:hover {
+        color: #075a36;
+    }
+
+    .filter-group.pilot-button-group {
+        align-self: flex-end;
+        display: flex;
+        align-items: flex-end;
+        justify-content: flex-start;
+        padding-bottom: 5px;
+        min-height: auto;
+    }
+
+    @media (max-width: 768px) {
+        nav .btn {
+            width: calc(50% - 10px);
+        }
+        .filter-container {
+            font-size: 0.9em;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .filter-group {
+            width: 100%;
+        }
+        .filter-group.pilot-button-group {
+            align-self: flex-start;
+            align-items: flex-start;
+            padding-top: 10px;
+            min-height: auto;
+        }
+        .filter-group .search-input {
+            width: 100%; /* Take full width now that no clear button */
+        }
+    }
+    @media (max-width: 576px) {
+        nav .btn {
+            width: 100%;
+        }
+    }
+    .gaa-flip-container {
+        perspective: 1000px;
+        width: 270px;
+        height: 100px;
+        margin: auto;
+        position: relative;
+    }
+
+    .gaa-flipper {
+        width: 100%;
+        height: 100%;
+        transition: transform 0.8s ease-in-out;
+        transform-style: preserve-3d;
+        position: relative;
+    }
+
+    .gaa-flipper.flip {
+        transform: rotateY(180deg);
+    }
+
+    .gaa-front,
+    .gaa-back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10%;
+        box-sizing: border-box;
+    }
+
+    .gaa-front {
+        background-color: transparent;
+        z-index: 2;
+    }
+
+    .gaa-front img {
+        max-height: 180px;
+        border-radius: 10%;
+        padding: 4px;
+        background-color: #bcc5d4;
+        border: none;
+    }
+
+    .gaa-back {
+        transform: rotateY(180deg);
+        z-index: 1;
+    }
+
+    .gaa-back img {
+        max-width: 300%;
+        object-fit: contain;
+        padding: 4px;
+    }
+
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <div class="gaa-flip-container">
+                <div class="gaa-flipper" id="gaaFlipper">
+                    <div class="gaa-front">
+                        <img src="{{ url_for('static', filename='GAA.jpg') }}" alt="GAA Logo">
+                    </div>
+                    <div class="gaa-back">
+                        <img src="{{ url_for('static', filename='Safety.jpg') }}" alt="Safety Message">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="banner">
+        <img src="{{ url_for('static', filename='ARD_Logo.jpg') }}" alt="ARD Logo">
+    </div>
+
+    <nav class="button-nav">
+        <button class="btn" id="pendingLabelsBtn">Pending Labels</button>
+        <div id="additionalButtons" class="hidden-buttons-container">
+            <button class="btn" onclick="window.location.href='/'">Filter View</button>
+            <button class="btn" onclick="window.location.href='/zone'">Zone View</button>
+        </div>
+        <button class="btn" onclick="window.location.href='/charts'">Charts</button>
+        <button class="btn" onclick="window.location.href='/ckd'">CKD Charts</button>
+        <button class="btn" onclick="window.location.href='/efficiency_report'">Efficiency Report</button>
+        <button class="btn" onclick="window.location.href='/racks_pending'">Racks Pending</button>
+    </nav>
+
+    <div class="container">
+        <div class="filter-container">
+            <div class="filter-group">
+                <div id="supplierSelectedTags" class="selected-tags-container"></div>
+                <div class="input-wrapper">
+                    <input type="text" id="supplierSearch" class="search-input" placeholder="Search Suppliers...">
+                </div>
+                <div id="supplierCheckboxesDropdown" class="checkbox-dropdown">
+                </div>
+            </div>
+            <div class="filter-group">
+                <div id="plantCodeSelectedTags" class="selected-tags-container"></div>
+                <div class="input-wrapper">
+                    <input type="text" id="plantCodeSearch" class="search-input" placeholder="Search Plant Codes...">
+                </div>
+                <div id="plantCodeCheckboxesDropdown" class="checkbox-dropdown">
+                </div>
+            </div>
+            <div class="filter-group pilot-button-group">
+                <button id="toggle-pilot-btn" class="btn btn-success">Hide PILOT Entries</button>
+            </div>
+        </div>
+
+        <table class="table table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Supplier</th>
+                    <th>Plant Code</th>
+                    <th>Part Name</th>
+                    <th>Tracking Number</th>
+                    <th class="hidden-column">Completion DateTime</th>
+                    <th>Time Elapsed</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in data %}
+                <tr class="data-row">
+                    <td class="supplier">{{ row.Supplier }}</td>
+                    <td class="plant-code">{{ row.PlantCd }}</td>
+                    <td>{{ row.PartName }}</td>
+                    <td>{{ row.TrackingNo }}</td>
+                    <td class="hidden-column">{{ row.CompleteDateTime }}</td>
+                    <td>{{ row.TimeElapsed }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <script>
+    // Function to get query parameters from URL
+    function getQueryParams() {
+        let params = {};
+        window.location.search.substring(1).split("&").forEach(function (param) {
+            let [key, value] = param.split("=");
+            params[key] = decodeURIComponent(value);
+        });
+        return params;
+    }
+
+    // Filter Data (HARDCODED as requested for immediate testing)
+    const allSuppliers = [
+        "AGC", "AUTONEUM", "BOS", "DRX", "ELANDERS", "FISCHER",
+        "FUJIKURA", "GRAMMER", "IFAGROUP", "MAGNA", "PLASTIC",
+        "TG", "VALEO"
+    ].sort();
+
+    const allPlantCodes = [
+        "PL1", "PLT1", "PLT2"
+    ].sort();
+
+
+    // --- Global State Variables ---
+    let selectedSuppliers = [];
+    let selectedPlantCodes = [];
+    let hidePilot = false; // Global flag for pilot entries
+
+    // --- Re-usable Filter UI Functions ---
+    // Renders checkboxes into a dropdown container
+    function renderCheckboxes(container, name, values, currentSelected) {
+        container.empty(); // Clear any existing checkboxes
+        if (!values.length) return container.append('<div class="no-results">No matching results.</div>');
+        values.forEach(value => {
+            // Create a unique ID for each checkbox
+            const id = `${name}-${value.replace(/\s/g, '-')}`;
+            // Create the checkbox input element
+            const checkbox = $(`<input type="checkbox" id="${id}" name="${name}" value="${value}">`)
+                                .prop('checked', currentSelected.includes(value)) // Set checked if already selected
+                                .on('change', function () { // Add an event listener for when checkbox state changes
+                if (name === 'supplier') {
+                    // Add value to selectedOwners or selectedCenters array
+                    if (this.checked) selectedSuppliers.push(value);
+                    else selectedSuppliers = selectedSuppliers.filter(v => v !== value);
+                    renderSelectedTags('supplier');
+                } else if (name === 'plant-code') {
+                    if (this.checked) selectedPlantCodes.push(value);
+                    // Remove value from selectedOwners or selectedCenters array
+                    else selectedPlantCodes = selectedPlantCodes.filter(v => v !== value);
+                    renderSelectedTags('plant-code');
+                }
+                updateURL();
+                filterTable();
+            });
+            const label = $(`<label for="${id}">`).text(value);
+            container.append($('<div>').append(checkbox).append(label));
+        });
+    }
+
+    // Renders (draws) the selected filter items as tags.
+   function renderSelectedTags(type, force = false) {
+        let container, allVals, currentSelected;
+
+        if (type === 'supplier') {
+            container = $('#supplierSelectedTags');
+            allVals = allSuppliers;
+            currentSelected = selectedSuppliers;
+        } else if (type === 'plant-code') { 
+            container = $('#plantCodeSelectedTags');
+            allVals = allPlantCodes;
+            currentSelected = selectedPlantCodes;
+        } else {
+            return; // Invalid type
+        }
+
+        if (!force) {
+            const paramsFromURL = getQueryParams();
+            const fromURL = type === 'supplier' ? (paramsFromURL.suppliers ? paramsFromURL.suppliers.split(',') : []) :
+                            (paramsFromURL.plant_codes ? paramsFromURL.plant_codes.split(',') : []);
+            
+            const isAllSelectedDefault = currentSelected.length === allVals.length &&
+                                         allVals.every(val => currentSelected.includes(val));
+            
+            if (!fromURL.length && isAllSelectedDefault) {
+                container.empty();
+                return;
+            }
+        }
+        
+        container.empty();
+        currentSelected.forEach(val => {
+            const tag = $(`<span class="selected-tag">${val}<span class="remove-tag">&times;</span></span>`);
+            tag.find('.remove-tag').on('click', () => {
+                if (type === 'supplier') {
+                    selectedSuppliers = selectedSuppliers.filter(v => v !== val);
+                    $(`#supplier-${val.replace(/\s/g,'-')}`).prop('checked', false);
+                } else if (type === 'plant-code') { 
+                    selectedPlantCodes = selectedPlantCodes.filter(v => v !== val);
+                    $(`#plant-code-${val.replace(/\s/g,'-')}`).prop('checked', false);
+                }
+                renderSelectedTags(type);
+                updateURL();
+                filterTable();
+            });
+            container.append(tag);
+        });
+    }
+    // Sets up event listeners for filter input fields and their dropdowns.
+    function setupFilter(input, dropdown, allVals, type) {
+        input.on('focus click', () => { // When input is clicked or focused
+            dropdown.addClass('show'); // Show the dropdown
+            filterAndRenderCheckboxes(input.val(), dropdown, allVals, type); // Filter and render checkboxes
+        }).on('keyup', () => { // When a key is pressed in the input
+            filterAndRenderCheckboxes(input.val() || '', dropdown, allVals, type); // Filter and render checkboxes based on new text
+        });
+        // When clicking anywhere else on the document
+        $(document).on('click', e => {
+            // If the click was not inside the input or the dropdown
+            if (!$(e.target).closest(input).length && !$(e.target).closest(dropdown).length) {
+                dropdown.removeClass('show'); // Hide the dropdown
+            }
+        });
+        // Prevent clicks inside the dropdown from closing it immediately
+        dropdown.on('click', e => e.stopPropagation());
+    }
+
+    // Filters the list of values based on search text and renders checkboxes.
+    function filterAndRenderCheckboxes(searchText, container, allVals, type) {
+        const filtered = allVals.filter(v => v.toLowerCase().includes(searchText.toLowerCase()));
+        let currentSelected;
+        if (type === 'supplier') currentSelected = selectedSuppliers;
+        else if (type === 'plant-code') currentSelected = selectedPlantCodes;
+        else return;
+
+        renderCheckboxes(container, type, filtered, currentSelected);
+    }
+
+    // Function to apply filter on table rows
+    function filterTable() {
+        let currentSelectedSuppliers = selectedSuppliers.map(s => s.toLowerCase());
+        let currentSelectedPlantCodes = selectedPlantCodes.map(pc => pc.toLowerCase());
+
+        let rows = document.querySelectorAll(".data-row");
+        rows.forEach(row => {
+            let rowSupplier = row.querySelector(".supplier").innerText.toLowerCase();
+            let rowPlantCode = row.querySelector(".plant-code").innerText.toLowerCase();
+            let partName = row.cells[2].innerText.toUpperCase();
+
+            let supplierMatches = currentSelectedSuppliers.length === 0 || currentSelectedSuppliers.includes(rowSupplier);
+            let plantCodeMatches = currentSelectedPlantCodes.length === 0 || currentSelectedPlantCodes.includes(rowPlantCode);
+            let pilotMatches = !hidePilot || !partName.includes("PILOT");
+
+            // if (selectedSuppliers.length === allSuppliers.length) {
+            //     supplierMatches = true;
+            // }
+            // if (selectedPlantCodes.length === allPlantCodes.length) {
+            //     plantCodeMatches = true;
+            // }
+
+
+            if (supplierMatches && plantCodeMatches && pilotMatches) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
+    }
+
+    function updateTable() {
+        fetch('/api/racks_pending_data') // Adjust the endpoint based on your backend route
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.querySelector('.table tbody');
+                tableBody.innerHTML = ''; // Clear the current table content
+
+                // Populate the table with new data
+                data.forEach(row => {
+                    const tr = document.createElement('tr');
+                    tr.classList.add('data-row');
+
+                    tr.innerHTML = `
+                        <td class="supplier">${row.Supplier}</td>
+                        <td class="plant-code">${row.PlantCd}</td>
+                        <td>${row.PartName}</td>
+                        <td>${row.TrackingNo}</td>
+                        <td class="hidden-column">${row.CompleteDateTime}</td>
+                        <td>${row.TimeElapsed}</td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+
+                // Reapply filters after table update
+                filterTable();
+            })
+            .catch(error => console.error('Error fetching racks pending data:', error));
+    }
+	
+	function togglePilotEntries() {
+		hidePilot = !hidePilot;
+		const button = document.getElementById("toggle-pilot-btn");
+
+		// Reapply all filters including pilot toggle
+		filterTable();
+
+		button.textContent = hidePilot ? "Show PILOT Entries" : "Hide PILOT Entries";
+	}
+
+    // --- Update URL Function ---
+    function updateURL() {
+        const params = new URLSearchParams(window.location.search);
+        selectedSuppliers.length ? params.set('suppliers', selectedSuppliers.join(',')) : params.delete('suppliers');
+        selectedPlantCodes.length ? params.set('plant_codes', selectedPlantCodes.join(',')) : params.delete('plant_codes'); 
+        hidePilot ? params.set('hide_pilot', 'true') : params.delete('hide_pilot');
+        history.replaceState({}, '', `${window.location.pathname}?${params}`);
+    }
+    document.addEventListener("DOMContentLoaded", function() {
+        // Pending Labels button functionality
+        const pendingLabelsBtn = document.getElementById('pendingLabelsBtn');
+        const additionalButtons = document.getElementById('additionalButtons');
+        pendingLabelsBtn.addEventListener('click', function() {
+            additionalButtons.classList.toggle('active');
+        });
+
+        // GAA Flipper animation
+        setInterval(() => {
+            const flipper = document.getElementById("gaaFlipper");
+            flipper.classList.toggle("flip");
+        }, 5000);
+
+        // Racks Pending Page specific logic
+        let params = getQueryParams();
+
+        // --- Initial setup for Supplier filter ---
+        const suppliersFromURL = params.suppliers ? params.suppliers.split(',') : [];
+        selectedSuppliers = suppliersFromURL.length > 0 ? suppliersFromURL : [...allSuppliers];
+
+        const supplierSearchInput = $('#supplierSearch');
+        const supplierCheckboxesDropdown = $('#supplierCheckboxesDropdown');
+        setupFilter(supplierSearchInput, supplierCheckboxesDropdown, allSuppliers, 'supplier');
+        renderCheckboxes(supplierCheckboxesDropdown, 'supplier', allSuppliers, selectedSuppliers);
+        renderSelectedTags('supplier');
+
+
+        // --- Initial setup for Plant Code filter ---
+        const plantCodesFromURL = params.plant_codes ? params.plant_codes.split(',') : [];
+        selectedPlantCodes = plantCodesFromURL.length > 0 ? plantCodesFromURL : [...allPlantCodes];
+
+        const plantCodeSearchInput = $('#plantCodeSearch');
+        const plantCodeCheckboxesDropdown = $('#plantCodeCheckboxesDropdown');
+        setupFilter(plantCodeSearchInput, plantCodeCheckboxesDropdown, allPlantCodes, 'plant-code');
+        renderCheckboxes(plantCodeCheckboxesDropdown, 'plant-code', allPlantCodes, selectedPlantCodes);
+        renderSelectedTags('plant-code');
+
+
+         // Initial setup for Hide PILOT button
+        if (params.hide_pilot === 'true') { 
+            hidePilot = true;
+            document.getElementById("toggle-pilot-btn").textContent = "Show PILOT Entries";
+        }
+
+        filterTable();
+         // Set up event listeners for filters
+		document.getElementById("toggle-pilot-btn").addEventListener("click", function() {
+            togglePilotEntries();
+            updateURL();
+        });
+
+        // Update the table every 60 seconds
+        setInterval(updateTable, 60000);
+
+        // updateTable() function is not provided, uncomment and implement if needed for dynamic data fetching
+        // function updateTable() {
+        //     // Your AJAX call to fetch new data and update the table body goes here
+        //     // Example (using jQuery AJAX):
+        //     // $.get('/api/racks_pending_data', function(newRows) {
+        //     //     const tbody = $('table tbody');
+        //     //     tbody.empty();
+        //     //     newRows.forEach(row => {
+        //     //         const tr = `<tr class="data-row">
+        //     //             <td class="supplier">${row.Supplier}</td>
+        //     //             <td class="plant-code">${row.PlantCd}</td>
+        //     //             <td>${row.PartName}</td>
+        //     //             <td>${row.TrackingNo}</td>
+        //     //             <td class="hidden-column">${row.CompleteDateTime}</td>
+        //     //             <td>${row.TimeElapsed}</td>
+        //     //         </tr>`;
+        //     //         tbody.append(tr);
+        //     //     });
+        //     //     filterTable();
+        //     // });
+        // }
+        // Initial table load
+        updateTable();
+    });
+    </script>
+</body>
+</html>
