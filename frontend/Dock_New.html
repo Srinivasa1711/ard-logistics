@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warehouse Dock Layout</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <!-- Embedded CSS Styles -->
+    <style>
+       /* Basic styles for the whole page */
+        body {
+            font-family: 'Open Sans', sans-serif;
+            margin: 0;
+            background-color: #eef2f7; 
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden; 
+        }
+
+        /* Styles for the top header section */
+        .header {
+            background-image: linear-gradient(to right, #2c3e50, #34495e); 
+            color: white;
+            padding: 20px 30px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative; 
+            z-index: 10; 
+        }
+
+        /* Styles for the main title in the header */
+        .header h1 {
+            margin: 0;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.5em;
+            flex-grow: 1; 
+        }
+
+        /* Styles for the fullscreen button (icon) */
+        #fullscreen-button {
+            font-size: 1.8em;
+            color: rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            transition: color 0.3s ease;
+            padding: 5px; 
+        }
+
+          /* Style for the fullscreen button when you hover over it */
+        #fullscreen-button:hover {
+            color: white;
+        }
+
+          /* This is the main container that holds all the dock sections */
+        .main-content-wrapper {
+            flex-grow: 1;
+            background-color: #ffffff; 
+            margin: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            padding: 30px; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px; 
+        }
+
+          /* Container for the actual dock areas (South and North) */
+        .warehouse-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column; 
+            gap: 30px; 
+            padding: 0; 
+            align-items: center; 
+            width: 100%; 
+        }
+
+        /* Styles for the "South Dock" and "North Dock" headlines */
+        .dock-section-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2em;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .south-title {
+            color: #081258; 
+        }
+
+        .north-title {
+            color: #081258; 
+        }
+
+        /* Styles for each dock area (South or North) */
+        .dock {
+            background-color: #ffffff; 
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            display: grid;
+            gap: 15px; 
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
+            flex: none;
+            width: 90%; 
+            max-width: 1200px; 
+            position: relative; 
+            min-height: 200px; 
+        }
+
+        /* .dock.south {
+            border-left: 8px solid #28a745; 
+            border-right: 8px solid #28a745;
+        }
+
+        .dock.north {
+            border-left: 8px solid #dc3545; 
+            border-right: 8px solid #dc3545;
+        } */
+
+        /* Message shown when a dock has no active tasks */
+        .empty-dock-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #8f5e5e;
+            font-size: 1.2em;
+            text-align: center;
+            width: 80%;
+            display: none; /* Changed from commented out to 'none' */
+        }
+
+        /* Styles for each individual dock door card */
+        .door {
+            background-color: #dde2df;
+            border-radius: 8px;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 160px;
+            border: 1px solid #c99a2c;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.3s ease;
+            position: relative;
+            overflow: hidden; 
+            
+            /* cursor: pointer; */ 
+        }
+
+        .door:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Status Change Animation */
+        .door.status-change {
+            animation: statusHighlight 1s ease-out;
+        }
+
+        /* Keyframes define the animation steps */
+        @keyframes statusHighlight {
+            0% { background-color: #ffeb3b; } 
+            50% { background-color: #fff; }
+            100% { background-color: #f8f8f8; }
+        }
+
+
+       /* Styles for the top part of the door card */
+        .door-header {
+            display: flex;
+            /* justify-content: space-between; */
+            align-items: center;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+            font-size: 20px;
+        }
+
+        /* Style for the door number (e.g., "Dock-1") */
+        .door-label {
+            font-weight: bold;
+            font-size: 2.0em;
+            color: #2c3e50;
+            text-align: center; 
+            display: block;
+            width: 100%;
+        
+        }
+
+        /* Style for the specialist information */
+        .specialist-info {
+            font-size: 0.85em;
+            color: #666;
+            display: flex;
+            
+        }
+
+        /* Style for icons within specialist info */
+        .specialist-info i {
+            margin-right: 5px;
+            color: #888;
+        }
+
+        /* Main information section (identifier, trailer) */
+        .main-info {
+            flex-grow: 1; 
+            margin-bottom: 10px;
+            
+        }
+
+        /* Style for the identifier (Route number or Customer name) */
+        .identifier {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #34495e;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+          /* Style for the trailer number */
+        /* .trailer-number {
+            font-size: 0.95em;
+            color: #555;
+            display: flex;
+            align-items: center;
+        } */
+
+          /* Style for icons within trailer number */
+         .trailer-number i {
+            margin-right: 5px;
+            color: #777;
+            text-align: center;
+        } 
+
+        /* Section for status and time info */
+        .status-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-top: 10px;
+            border-top: 1px dashed #eee;
+        }
+
+          /* Style for the main status text (Assigned, Loading/Unloading) */
+        .door-status {
+            font-weight: 700;
+            font-size: 1em;
+            padding: 5px 10px;
+            border-radius: 5px;
+            color: white;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Specific color for "Active" (Assigned) status */
+        .door.active .door-status {
+            background-color: #081258;
+            box-shadow: 0 2px 5px rgba(0, 10, 17, 0.3);
+            
+        }
+
+          /* Specific color for "In Progress" (Loading/Unloading) status */
+        .door.in-progress .door-status {
+            background-color:#dcc035; 
+            box-shadow: 0 2px 5px rgba(243, 156, 18, 0.3);
+        }
+
+        /* Specific color for "Left" status (green) */
+        .door.left .door-status {
+            background-color: #28a745;
+            box-shadow: 0 2px 5px rgba(40, 167, 69, 0.3);
+        }
+
+        /* Specific color for "Still There" status (yellow) */
+        /* .door.still-there .door-status {
+            background-color: #dcc035; 
+            box-shadow: 0 2px 5px rgba(220, 53, 69, 0.3);
+        }
+         */
+
+       /* Container for time information */
+        .time-info {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            font-size: 1.02em;
+            color: #0c2671;
+            text-align: center;
+            align-items: center;
+        }
+
+          /* Style for individual time items (e.g., "In Progress: X mins") */
+        .time-item {
+            display: flex;
+            align-items: center;
+        }
+
+        /* Style for icons within time items */
+        .time-item i {
+            margin-right: 5px;
+            color: #aaa;
+        }
+
+        
+        /* Media Queries for Responsiveness */
+        @media (max-width: 1024px) {
+            .main-content-wrapper {
+                margin: 15px;
+                padding: 20px;
+            }
+            .dock {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                padding: 15px;
+                width: 95%; 
+            }
+            .header h1 {
+                font-size: 2em;
+            }
+            .dock-section-title {
+                font-size: 1.8em;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 15px 20px;
+            }
+            .header h1 {
+                font-size: 1.8em;
+                margin-bottom: 10px;
+            }
+            #fullscreen-button {
+                position: static; 
+                margin-top: 10px;
+            }
+            .main-content-wrapper {
+                margin: 10px;
+                padding: 15px;
+            }
+            .warehouse-container {
+                flex-direction: column; 
+                padding: 0;
+                gap: 15px;
+            }
+            .dock {
+                min-width: unset; 
+                width: 100%; 
+                margin-bottom: 0; 
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.5em;
+            }
+            .dock-section-title {
+                font-size: 1.5em;
+            }
+            .dock {
+                grid-template-columns: 1fr; 
+            }
+            .door {
+                padding: 12px;
+                min-height: 140px;
+            }
+            .door-label {
+                font-size: 1.3em;
+            }
+            .identifier {
+                font-size: 1em;
+            }
+        }
+    </style>
+
+    <!-- Embedded JavaScript Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Define dock configuration, making door ranges configurable and external from the rendering logic.
+            // Retaining this improvement for better maintainability.
+           const dockConfig = {
+    south: {
+        containerId: 'dock-south',
+        emptyMessageId: 'south-empty-message',
+        minDoor: 1,
+        maxDoor: 37
+    },
+    north: {
+        containerId: 'dock-north',
+        emptyMessageId: 'north-empty-message',
+        minDoor: 5,
+        maxDoor: 27
+    }
+};
+
+            function updateTasks() {
+                fetch('/tasks')
+                    .then(response => response.json())
+                    .then(tasks => {
+                        console.log(tasks); // Debug print to check task data
+                        const docks = {
+                            south: document.getElementById('dock-south'),
+                            north: document.getElementById('dock-north')
+                        };
+
+                        // Clear existing dock content
+                        docks.south.innerHTML = '';
+                        docks.north.innerHTML = '';
+
+                        // Separate tasks for each dock
+                        const southTasks = tasks.filter(task => task.Dock.toLowerCase() === 'south');
+                        const northTasks = tasks.filter(task => task.Dock.toLowerCase() === 'north');
+
+                        function getNumericDoorNumber(doorString) {
+                            return parseInt(doorString.replace('Dock-', ''), 10);
+                        }
+
+                       function appendTasks(dockTasks, dockContainer, minDoor, maxDoor) {
+                            dockTasks
+                                .filter(task => {
+                                    const doorNumber = getNumericDoorNumber(task.Door);
+                                  return doorNumber >= minDoor && doorNumber <= maxDoor && 
+                                  (task.Status === "Active" || task.Status === "In Progress" || 
+                                  task.Status === "Left" || task.Status === "Still There");
+                                })
+                                .sort((a, b) => getNumericDoorNumber(a.Door) - getNumericDoorNumber(b.Door))
+                           .forEach(task => {
+                                // It must be updated to include the new statuses for them to be displayed.
+                                if (task.Status === "Active" || task.Status === "In Progress" || task.Status === "Left" || task.Status === "Still There") {
+                                    const dockDoor = document.createElement('div');
+                                    let displayStatus = task.Status;
+                                    let className = "";
+                                    let identifier = "";
+
+                                   if (task.Status === "Active") {
+                                    displayStatus = '<i class="fas fa-truck"></i> Assigned';
+                                    className = "active";
+                                    identifier = `Route ${task.Identifier}`;
+                                    
+                                } else if (task.Status === "In Progress") {
+                                     displayStatus = '<i class="fas fa-truck"></i> Loading/Unloading';
+                                     className = "in-progress";
+                                     identifier = `Route ${task.Identifier}`;
+                                    } else if (task.Status === "Left") {
+                                        displayStatus = '<i class="fas fa-truck"></i> Departed';
+                                        className = "left";
+                                        identifier = `Route ${task.Identifier}`;
+                                    } else if (task.Status === "Still There") {
+                                        displayStatus = '<i class="fas fa-truck"></i> Overdue';
+                                        className = "still-there";
+                                        identifier = `Route ${task.Identifier}`;
+                                    }
+
+                                    if (task.CustomerType === "Averitt") {
+                                        identifier = `Route ${task.Identifier}`;
+                                    } else if (task.CustomerType === "OtherCustomer") {
+                                        identifier = `${task.Identifier}`;
+                                    }
+
+                                    // Added trailer and specialist info conditionally, retaining this improvement.
+                                    const trailerInfo = `<div class="trailer-number"><i class="fas fa-truck fa-2x"></i></div>`;
+                                    
+                                    const specialistInfo = task.Specialist ?
+                                        `<div class="specialist-info"><i class="fas fa-user-tie"></i>Specialist: ${task.Specialist}</div>` : '';
+
+                                    dockDoor.id = `door-${task.Door}`;
+                                    dockDoor.className = `door ${className}`;
+                                    // Calculate time elapsed since start time
+                                    const startTime = new Date(task.StartTime);
+                                    let timeElapsed = 0;
+                                    if (!isNaN(startTime.getTime())) {
+                                        const currentTime = new Date();
+                                        timeElapsed = Math.floor((currentTime - startTime) / (1000 * 60)); // in minutes
+                                    }
+
+                                    // Calculate time elapsed since accepted time
+                                    let timeSinceAccepted = 0;
+                                    if (task.Status === "In Progress") {
+                                        const acceptedTime = new Date(task.AcceptedTime);
+                                        if (!isNaN(acceptedTime.getTime())) {
+                                            const currentTime = new Date();
+                                            timeSinceAccepted = Math.floor((currentTime - acceptedTime) / (1000 * 60)); // in minutes
+                                        }
+                                    }
+
+                                    dockDoor.innerHTML = `
+                                        <div class="door-header">
+                                            <div class="door-label">${task.Door}</div>
+                                            ${specialistInfo}
+                                        </div>
+                                        <div class="main-info">
+                                            <div class="identifier">${identifier}</div>
+                                        </div>
+                                        <div class="status-section">
+                                            <div class="door-status">${displayStatus}</div>
+                                            <div class="time-info">
+                                                <div class="time-item"><i class="fas fa-clock"></i>TE: ${timeElapsed} mins</div>
+                                                ${task.Status === "In Progress" ? `<div class="time-item"><i class="fas fa-hourglass-half"></i>In Progress: ${timeSinceAccepted} mins</div>` : ''}
+                                            </div>
+                                        </div>
+                                    `;
+                                    dockContainer.appendChild(dockDoor);
+                                }
+                            });
+                        }
+
+                        // Append sorted tasks to respective dock containers
+                        appendTasks(southTasks, docks.south, 1, 37);
+                        appendTasks(northTasks, docks.north, 5, 27);
+                    })
+                    .catch(error => {
+                        console.error('Failed to fetch tasks:', error);
+                        // alert('Could not load dock data. Please try again later.'); 
+                    });
+            }
+
+            // Update tasks on initial load
+            updateTasks();
+
+            // Set interval to update tasks every 30 seconds
+            setInterval(updateTasks, 30000);
+
+
+            // Fullscreen toggle functionality
+            const fullScreenButton = document.getElementById('fullscreen-button');
+            fullScreenButton.addEventListener('click', () => {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(err => {
+                        console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+                        alert(`Error attempting to enable full-screen mode. Please check console for details.`);
+                    });
+                } else {
+                    document.exitFullscreen();
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <!-- Top header of the page -->
+    <div class="header">
+        <h1>Warehouse Dock Status</h1>
+          <!-- Fullscreen toggle icon -->
+        <i id="fullscreen-button" class="fas fa-expand" title="Toggle Fullscreen"></i>
+    </div>
+
+      <!-- Main content area with a nice background and shadow -->
+    <div class="main-content-wrapper">
+        <!-- The main container that holds the South and North dock sections -->
+        <div class="warehouse-container">
+              <!-- Headline for the South Dock -->
+            <h2 class="dock-section-title south-title">South Dock</h2>
+            <!-- Container for South Dock doors -->
+            <div class="dock south" id="dock-south">
+                <!-- Doors for South dock will be dynamically added here -->
+                <div class="empty-dock-message" id="south-empty-message">No active tasks for South Dock.</div>
+            </div>
+
+              <!-- Headline for the North Dock -->
+            <h2 class="dock-section-title north-title">North Dock</h2>
+              <!-- Container for North Dock doors -->
+            <div class="dock north" id="dock-north">
+                <!-- Doors for North dock will be dynamically added here -->
+                <div class="empty-dock-message" id="north-empty-message">No active tasks for North Dock.</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
