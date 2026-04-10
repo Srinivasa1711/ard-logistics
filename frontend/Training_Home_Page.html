@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Basic styling for the body */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f963e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            
+        }
+
+        /* Container for the dashboard content */
+        .dashboard-container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 850px;
+            width: 100%;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Styling for the dashboard title */
+        .dashboard-title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Styling for the description text */
+        .dashboard-description {
+            font-size: 1.125rem;
+            color: #4a5568;
+            margin-bottom: 2.5rem;
+        }
+
+        /* Styling for the login button */
+        .login-button {
+            display: inline-block;
+            padding: 1rem 2.5rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: white;
+            background-color: #4c51bf;
+            border: none;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 10px rgba(76, 81, 191, 0.3);
+        }
+
+        .admin_login-button{
+            display: inline-block;
+            padding: 1rem 2.5rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: white;
+            background-color: #4c51bf;
+            border: none;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 10px rgba(76, 81, 191, 0.3);
+            margin-top: 10px;
+        }
+         .admin_login-button:hover {
+            background-color: #3e44a8;
+            transform: translateY(-2px);
+        }
+
+        /* Active (click) effect for the login button */
+        .admin_login-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(76, 81, 191, 0.3);
+        }
+        /* Hover effect for the login button */
+        .login-button:hover {
+            background-color: #3e44a8;
+            transform: translateY(-2px);
+        }
+
+        /* Active (click) effect for the login button */
+        .login-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(76, 81, 191, 0.3);
+        }
+        .Trainer-Button{
+             display: inline-block;
+            padding: 1rem 2.5rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: white;
+            background-color: #4c51bf;
+            border: none;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 10px rgba(76, 81, 191, 0.3);
+            margin-top: 10px;
+        }
+        .Trainer-Button:hover{
+             background-color: #3e44a8;
+            transform: translateY(-2px);
+        }
+        .Trainer-Button:active{
+             transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(76, 81, 191, 0.3);
+        }
+        .logo-container{
+            background-color: aliceblue;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 400px;
+          }
+          
+         .logo-container img {
+        max-width: 120px; 
+        max-height: 80px;
+        height: auto; 
+        display: block; 
+        margin-left: auto; 
+        margin-right: auto; 
+        border-radius: 15px;
+        margin-bottom: 15px;
+         filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8))
+    }
+     .logo-container img:hover {
+        transform: scale(1.03);
+    }
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+       <img src="{{ url_for('static', filename='ARD_Logo.jpg') }}" alt="ARD Logo">
+    
+    <div class="dashboard-container">
+        <h1 class="dashboard-title">Welcome</h1>
+        <p class="dashboard-description" style="font-weight: bold; font-size: 20px;">
+             Training Tracker
+        </p>
+
+        <button id="loginButton" class="login-button">
+            User Login
+        </button>
+        <button id="TrainerLoginButton" class="Trainer-Button">Trainer Login</button>
+        <button id="AdminloginButton" class="admin_login-button">Admin Login</button>
+    </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginButton = document.getElementById('loginButton');
+
+            // click event listener to the button
+            loginButton.addEventListener('click', function() {
+                // Use Flask's url_for to generate the correct URL for the 'login_page' route
+                window.location.href = "{{ url_for('login_page') }}";
+               
+            });
+
+        });
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginButton = document.getElementById('AdminloginButton');
+
+            // click event listener to the button
+            loginButton.addEventListener('click', function() {
+                // Use Flask's url_for to generate the correct URL for the 'login_page' route
+                window.location.href = "{{ url_for('admin_login') }}";
+               
+            });
+        });
+
+       document.addEventListener('DOMContentLoaded', function() {
+        const trainerLoginButton = document.getElementById('TrainerLoginButton'); // Corrected ID
+        trainerLoginButton.addEventListener('click', function() { // Corrected variable name
+        window.location.href = "{{ url_for('login_page_trainer') }}"; 
+        });
+    });
+    </script>
+</body>
+</html>
