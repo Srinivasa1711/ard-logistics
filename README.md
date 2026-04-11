@@ -1,4 +1,4 @@
-# ard-logistics
+# ARD-Logistics
 
 This repository contains a structured and simplified version of projects developed during my internship at ARD Logistics. The work focuses on building backend systems, dashboards, and workflow automation tools using Python, Flask, and SQL.
 
