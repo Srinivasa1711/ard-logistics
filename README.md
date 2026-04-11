@@ -64,10 +64,13 @@ I designed and implemented a digital training log system to replace manual track
 
 ```text
 ard-logistics/
-│── backend/          # Python backend modules
-│── frontend/         # HTML/JS frontend pages
-│── assets/           # Images and screenshots
-│── docs/             # Documentation files
+|--kpi_modernization_project
+ │── backend/          # Python backend modules
+ │── frontend/         # HTML/JS frontend pages
+|--training_log_project
+ │── backend/          # Python backend modules
+ │── frontend/         # HTML/JS frontend pages
+│── assets/            # Images and screenshots
 │── README.md
 │── requirements.txt
 │── .gitignore
